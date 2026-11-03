@@ -1,0 +1,1842 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Etreva Travel API",
+    "description": "API REST para el sistema de turismo inteligente **Etreva Travel** — La Paz, Bolivia.\n\n## Acceso desde Swagger\nSwagger está excluido del middleware de sesión. Podés probar los endpoints públicos directamente.\nLos endpoints protegidos devuelven `401` si no hay sesión activa válida con el rol requerido.\n\n## Autenticación\nEl sistema usa **sesiones PHP + JWT**. Para endpoints protegidos iniciá sesión primero via `POST /index.php?c=login&a=Login` y la cookie `PHPSESSID` se enviará automáticamente en las siguientes peticiones.\n\n## Estados de plan (rol 1 — clientes)\n| Estado | Descripción | Puede navegar |\n|--------|-------------|---------------|\n| `activo` | Plan vigente | ✅ Todo |\n| `gracia` | Vencido 1–3 días | ✅ Todo + aviso toast |\n| `bloqueado` | Vencido >3 días | ⚠️ Solo Pago, Historial, Favoritos |\n| `sin_plan` | Nunca pagó | ❌ Solo Pago |\n\n## Estados de pago (en `configuracion_json.registro_pago.estado`)\n| Estado | Descripción |\n|--------|-------------|\n| `pendiente_pago` | Comprobante subido, esperando aprobación admin (ventana 2 días) |\n| `activo_pagado` | Admin aprobó el pago |\n| `rechazado` | Admin rechazó el comprobante |",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Etreva Travel",
+      "email": "k3vinfx@gmail.com"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost/etreva",
+      "description": "Servidor local de desarrollo"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Auth",
+      "description": "Autenticación y sesión"
+    },
+    {
+      "name": "Usuarios",
+      "description": "Registro y recuperación de contraseña"
+    },
+    {
+      "name": "Admin — Panel",
+      "description": "Dashboard del administrador (rol 2)"
+    },
+    {
+      "name": "Admin — Clientes",
+      "description": "Gestión de clientes desde el panel admin (rol 2)"
+    },
+    {
+      "name": "Pagos",
+      "description": "Planes, pagos y suscripciones (rol 1)"
+    },
+    {
+      "name": "Buscar",
+      "description": "Búsqueda y listado de atracciones"
+    },
+    {
+      "name": "Recomendaciones",
+      "description": "Motor de recomendaciones IA"
+    },
+    {
+      "name": "Historial",
+      "description": "Historial de viajes del usuario"
+    },
+    {
+      "name": "Favoritos",
+      "description": "Atracciones favoritas del usuario"
+    },
+    {
+      "name": "Itinerarios",
+      "description": "Itinerarios de viaje personalizados"
+    },
+    {
+      "name": "Reseñas",
+      "description": "Reseñas de atracciones"
+    },
+    {
+      "name": "Perfil",
+      "description": "Perfil del usuario"
+    }
+  ],
+  "paths": {
+    "/index.php?c=login&a=Index": {
+      "get": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Mostrar formulario de login",
+        "description": "Renderiza la vista de login. Si ya hay sesión activa redirige al inicio.",
+        "operationId": "loginIndex",
+        "responses": {
+          "200": {
+            "description": "Vista HTML del formulario de login"
+          },
+          "302": {
+            "description": "Redirige a inicio si ya hay sesión"
+          }
+        }
+      }
+    },
+    "/index.php?c=login&a=Login": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Iniciar sesión",
+        "description": "Autentica al usuario por email y contraseña (bcrypt). El flujo bifurca según el rol:\n\n- **Rol 2 (admin):** sesión mínima, redirige a `/admin`.\n- **Rol 1 (cliente):** calcula `plan_estado` con `calcularEstadoPlan()`, guarda en `$_SESSION['plan_estado']` y redirige a `/inicio`.\n\n**Estados de cuenta que bloquean el login:**\n- `pendiente_correo` → reenvía email de activación, devuelve `error_type: not_verified`\n- `inactivo` / `suspendido` → devuelve `error_type: cuenta_inactiva`\n\n**Este endpoint es público** — no requiere sesión.",
+        "operationId": "loginPost",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              },
+              "examples": {
+                "cliente_normal": {
+                  "summary": "Cliente con credenciales correctas",
+                  "value": {
+                    "CorreoElectronico": "k3vinfx@gmail.com",
+                    "Contrasena": "dellFX009@"
+                  }
+                },
+                "admin": {
+                  "summary": "Administrador",
+                  "value": {
+                    "CorreoElectronico": "admin@etreva.com",
+                    "Contrasena": "adminpass"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Respuesta del intento de login (siempre HTTP 200, verificar `success`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                },
+                "examples": {
+                  "ok_plan_activo": {
+                    "summary": "✅ Cliente — plan activo",
+                    "value": {
+                      "success": true,
+                      "message": "¡Bienvenido de nuevo!",
+                      "error_type": null,
+                      "redirect": "index.php?c=inicio&a=Inicio",
+                      "plan_estado": {
+                        "estado": "activo",
+                        "dias_restantes": 18,
+                        "dias_vencido": 0,
+                        "dias_gracia_restantes": 0,
+                        "plan_nombre": "Aventura Andina",
+                        "puede_navegar": true,
+                        "es_gracia": false,
+                        "es_bloqueado": false
+                      }
+                    }
+                  },
+                  "ok_gracia": {
+                    "summary": "⚠️ Cliente — período de gracia",
+                    "value": {
+                      "success": true,
+                      "message": "Bienvenido. Tu plan venció hace 1 día(s), tenés 2 día(s) de acceso gratuito.",
+                      "error_type": "gracia",
+                      "redirect": "index.php?c=inicio&a=Inicio",
+                      "plan_estado": {
+                        "estado": "gracia",
+                        "dias_restantes": 0,
+                        "dias_vencido": 1,
+                        "dias_gracia_restantes": 2,
+                        "plan_nombre": "Explorador Urbano",
+                        "puede_navegar": true,
+                        "es_gracia": true,
+                        "es_bloqueado": false
+                      }
+                    }
+                  },
+                  "ok_bloqueado": {
+                    "summary": "🔒 Cliente — plan bloqueado (solo pago/historial/favoritos)",
+                    "value": {
+                      "success": true,
+                      "message": "Tu plan venció hace 5 días. Renovalo para acceder a todo.",
+                      "error_type": "bloqueado",
+                      "redirect": "index.php?c=pago&a=Index",
+                      "plan_estado": {
+                        "estado": "bloqueado",
+                        "dias_restantes": 0,
+                        "dias_vencido": 5,
+                        "dias_gracia_restantes": 0,
+                        "plan_nombre": "Premium Paceño",
+                        "puede_navegar": false,
+                        "es_gracia": false,
+                        "es_bloqueado": true
+                      }
+                    }
+                  },
+                  "ok_sin_plan": {
+                    "summary": "🚫 Cliente — sin plan contratado",
+                    "value": {
+                      "success": true,
+                      "message": "¡Bienvenido! Elegí un plan para comenzar.",
+                      "error_type": "sin_plan",
+                      "redirect": "index.php?c=pago&a=Index",
+                      "plan_estado": {
+                        "estado": "sin_plan",
+                        "dias_restantes": 0,
+                        "dias_vencido": 0,
+                        "dias_gracia_restantes": 0,
+                        "plan_nombre": null,
+                        "puede_navegar": false,
+                        "es_gracia": false,
+                        "es_bloqueado": false
+                      }
+                    }
+                  },
+                  "ok_admin": {
+                    "summary": "✅ Administrador",
+                    "value": {
+                      "success": true,
+                      "message": "¡Bienvenido, administrador!",
+                      "error_type": null,
+                      "redirect": "index.php?c=admin&a=Inicio",
+                      "plan_estado": null
+                    }
+                  },
+                  "error_credenciales": {
+                    "summary": "❌ Credenciales incorrectas",
+                    "value": {
+                      "success": false,
+                      "message": "Credenciales incorrectas.",
+                      "error_type": null,
+                      "redirect": null,
+                      "plan_estado": null
+                    }
+                  },
+                  "error_no_verificado": {
+                    "summary": "❌ Correo no verificado",
+                    "value": {
+                      "success": false,
+                      "message": "Tu cuenta está pendiente de activación. Se reenvió el enlace a tu correo.",
+                      "error_type": "not_verified",
+                      "redirect": null,
+                      "plan_estado": null
+                    }
+                  },
+                  "error_inactivo": {
+                    "summary": "❌ Cuenta inactiva o suspendida",
+                    "value": {
+                      "success": false,
+                      "message": "Tu cuenta fue desactivada. Contactá al soporte.",
+                      "error_type": "cuenta_inactiva",
+                      "redirect": null,
+                      "plan_estado": null
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/index.php?c=login&a=Logout": {
+      "get": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Cerrar sesión",
+        "description": "Destruye la sesión PHP y redirige al login.",
+        "operationId": "logout",
+        "responses": {
+          "302": {
+            "description": "Redirige a login"
+          }
+        }
+      }
+    },
+    "/index.php?c=usuarios&a=activar": {
+      "get": {
+        "tags": [
+          "Usuarios"
+        ],
+        "summary": "Activar cuenta por token de email",
+        "description": "Verifica el token enviado por correo y activa la cuenta del usuario.",
+        "operationId": "activarCuenta",
+        "parameters": [
+          {
+            "name": "token",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Token de verificación de 64 caracteres hex"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Vista de cuenta activada o error de activación"
+          }
+        }
+      }
+    },
+    "/index.php?c=usuarios&a=SolicitarRestauracion": {
+      "post": {
+        "tags": [
+          "Usuarios"
+        ],
+        "summary": "Solicitar restauración de contraseña",
+        "description": "Genera un token de recuperación y envía el enlace por email. Responde siempre con `success: true` para no revelar si el email existe.",
+        "operationId": "solicitarRestauracion",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "email"
+                ],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Respuesta siempre exitosa (por seguridad)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SimpleResponse"
+                },
+                "example": {
+                  "success": true,
+                  "message": "Si el correo está registrado, recibirás un enlace de recuperación."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/index.php?c=usuarios&a=restablecer": {
+      "get": {
+        "tags": [
+          "Usuarios"
+        ],
+        "summary": "Formulario de nueva contraseña",
+        "description": "Valida el token (max 1 hora) y renderiza el formulario para ingresar la nueva contraseña.",
+        "operationId": "restablecerVista",
+        "parameters": [
+          {
+            "name": "token",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Formulario de restablecimiento o vista de error de token"
+          }
+        }
+      }
+    },
+    "/index.php?c=usuarios&a=guardarNuevaPassword": {
+      "post": {
+        "tags": [
+          "Usuarios"
+        ],
+        "summary": "Guardar nueva contraseña",
+        "description": "Valida token + ID, hashea con bcrypt y guarda la nueva contraseña. Invalida el token para evitar reusos.",
+        "operationId": "guardarNuevaPassword",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "id",
+                  "token",
+                  "password"
+                ],
+                "properties": {
+                  "id": {
+                    "type": "integer"
+                  },
+                  "token": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string",
+                    "minLength": 6
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Resultado del cambio",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SimpleResponse"
+                },
+                "examples": {
+                  "ok": {
+                    "value": {
+                      "success": true,
+                      "message": "Contraseña actualizada correctamente."
+                    }
+                  },
+                  "expirado": {
+                    "value": {
+                      "success": false,
+                      "message": "El enlace ha expirado."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/index.php?c=admin&a=Inicio": {
+      "get": {
+        "tags": [
+          "Admin — Panel"
+        ],
+        "summary": "Dashboard del administrador",
+        "description": "Vista principal del panel admin. **Requiere rol 2.**",
+        "operationId": "adminInicio",
+        "security": [
+          {
+            "sessionAdmin": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Vista HTML del dashboard"
+          },
+          "302": {
+            "description": "Redirige a login si no es admin"
+          }
+        }
+      }
+    },
+    "/index.php?c=admin&a=Stats": {
+      "get": {
+        "tags": [
+          "Admin — Panel"
+        ],
+        "summary": "KPIs generales del sistema",
+        "description": "Devuelve totales de usuarios, pagos, atracciones y recomendaciones para los KPI cards. **Requiere rol 2.**",
+        "operationId": "adminStats",
+        "security": [
+          {
+            "sessionAdmin": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Objeto con todos los KPIs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminStats"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/index.php?c=admin&a=MiniStats": {
+      "get": {
+        "tags": [
+          "Admin — Panel"
+        ],
+        "summary": "Mini-stats para el sidebar",
+        "description": "Usuarios activos y pagos pendientes para el sidebar. **Requiere rol 2.**",
+        "operationId": "adminMiniStats",
+        "security": [
+          {
+            "sessionAdmin": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Stats del sidebar",
+            "content": {
+              "application/json": {
+                "example": {
+                  "usuarios_activos": 12,
+                  "pagos_pendientes": 3
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/index.php?c=admin&a=UsuariosRecientes": {
+      "get": {
+        "tags": [
+          "Admin — Panel"
+        ],
+        "summary": "Últimos usuarios registrados",
+        "description": "Devuelve los 10 usuarios más recientes con su estado de plan extraído del JSON. **Requiere rol 2.**",
+        "operationId": "adminUsuariosRecientes",
+        "security": [
+          {
+            "sessionAdmin": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de usuarios recientes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "usuarios": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/UsuarioResumen"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/index.php?c=adminUsuarios&a=Index": {
+      "get": {
+        "tags": [
+          "Admin — Clientes"
+        ],
+        "summary": "Vista de gestión de clientes",
+        "description": "Renderiza la vista HTML completa con tabla de clientes, filtros y acciones. **Requiere rol 2.**",
+        "operationId": "adminUsuariosIndex",
+        "security": [
+          {
+            "sessionAdmin": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Vista HTML"
+          }
+        }
+      }
+    },
+    "/index.php?c=adminUsuarios&a=Listar": {
+      "get": {
+        "tags": [
+          "Admin — Clientes"
+        ],
+        "summary": "Listar clientes con filtros",
+        "description": "Devuelve clientes (rol=1) paginados. Los que tienen pago `pendiente_pago` aparecen primero. **Requiere rol 2.**",
+        "operationId": "adminUsuariosListar",
+        "security": [
+          {
+            "sessionAdmin": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Búsqueda por nombre, apellido o email"
+          },
+          {
+            "name": "estado",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "activo",
+                "inactivo",
+                "suspendido",
+                "pendiente_correo"
+              ]
+            },
+            "description": "Filtrar por estado de cuenta"
+          },
+          {
+            "name": "pago_estado",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "pendiente_pago",
+                "activo_pagado",
+                "sin_plan"
+              ]
+            },
+            "description": "Filtrar por estado de pago"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 1
+            },
+            "description": "Número de página"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista paginada de clientes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientesListResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/index.php?c=adminUsuarios&a=Ver": {
+      "get": {
+        "tags": [
+          "Admin — Clientes"
+        ],
+        "summary": "Detalle completo de un cliente",
+        "description": "Devuelve todos los datos del cliente incluyendo info del pago, comprobante, historial de estados y emails enviados. **Requiere rol 2.**",
+        "operationId": "adminUsuariosVer",
+        "security": [
+          {
+            "sessionAdmin": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "ID del usuario"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalle del cliente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClienteDetalleResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/index.php?c=adminUsuarios&a=AprobarPago": {
+      "post": {
+        "tags": [
+          "Admin — Clientes"
+        ],
+        "summary": "Aprobar comprobante de pago",
+        "description": "Cambia `registro_pago.estado` a `activo_pagado` y `estado` de cuenta a `activo`. Registra `aprobado_por` y `fecha_aprobacion`. Advierte si han pasado ≥2 días desde la subida del comprobante. **Requiere rol 2.**",
+        "operationId": "adminAprobarPago",
+        "security": [
+          {
+            "sessionAdmin": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "user_id"
+                ],
+                "properties": {
+                  "user_id": {
+                    "type": "integer"
+                  }
+                }
+              },
+              "example": {
+                "user_id": 6
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Resultado de la aprobación",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "ok": {
+                    "value": {
+                      "success": true,
+                      "message": "Pago aprobado. El cliente ya puede acceder al sistema.",
+                      "alerta": ""
+                    }
+                  },
+                  "tardio": {
+                    "value": {
+                      "success": true,
+                      "message": "Pago aprobado. El cliente ya puede acceder al sistema.",
+                      "alerta": "Aprobación tardía: han pasado 3 días desde el pago."
+                    }
+                  },
+                  "error_estado": {
+                    "value": {
+                      "success": false,
+                      "message": "El pago no está en estado pendiente"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/index.php?c=adminUsuarios&a=RechazarPago": {
+      "post": {
+        "tags": [
+          "Admin — Clientes"
+        ],
+        "summary": "Rechazar comprobante de pago",
+        "description": "Marca el pago como `rechazado` y guarda el motivo en el JSON del usuario. El cliente deberá subir un nuevo comprobante. **Requiere rol 2.**",
+        "operationId": "adminRechazarPago",
+        "security": [
+          {
+            "sessionAdmin": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "user_id",
+                  "motivo"
+                ],
+                "properties": {
+                  "user_id": {
+                    "type": "integer"
+                  },
+                  "motivo": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              },
+              "example": {
+                "user_id": 6,
+                "motivo": "El comprobante está borroso y no se puede verificar el monto."
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Resultado del rechazo",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "ok": {
+                    "value": {
+                      "success": true,
+                      "message": "Pago rechazado. El cliente fue notificado del motivo."
+                    }
+                  },
+                  "error": {
+                    "value": {
+                      "success": false,
+                      "message": "El motivo de rechazo es obligatorio"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/index.php?c=adminUsuarios&a=CambiarEstado": {
+      "post": {
+        "tags": [
+          "Admin — Clientes"
+        ],
+        "summary": "Cambiar estado de cuenta de un cliente",
+        "description": "Estados válidos: `activo`, `inactivo`, `suspendido`. Para `inactivo` y `suspendido` el motivo es obligatorio. Guarda historial en `configuracion_json.historial_estado[]`. **Requiere rol 2.**",
+        "operationId": "adminCambiarEstado",
+        "security": [
+          {
+            "sessionAdmin": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "user_id",
+                  "estado"
+                ],
+                "properties": {
+                  "user_id": {
+                    "type": "integer"
+                  },
+                  "estado": {
+                    "type": "string",
+                    "enum": [
+                      "activo",
+                      "inactivo",
+                      "suspendido"
+                    ]
+                  },
+                  "motivo": {
+                    "type": "string",
+                    "description": "Requerido para inactivo/suspendido"
+                  }
+                }
+              },
+              "examples": {
+                "suspender": {
+                  "value": {
+                    "user_id": 6,
+                    "estado": "suspendido",
+                    "motivo": "Uso indebido de la cuenta según términos de uso."
+                  }
+                },
+                "reactivar": {
+                  "value": {
+                    "user_id": 6,
+                    "estado": "activo",
+                    "motivo": ""
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Resultado del cambio",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "suspendido": {
+                    "value": {
+                      "success": true,
+                      "message": "Cuenta suspendida correctamente."
+                    }
+                  },
+                  "reactivado": {
+                    "value": {
+                      "success": true,
+                      "message": "Cuenta reactivada correctamente."
+                    }
+                  },
+                  "sin_motivo": {
+                    "value": {
+                      "success": false,
+                      "message": "Debes indicar el motivo de la acción"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/index.php?c=adminUsuarios&a=EnviarOferta": {
+      "post": {
+        "tags": [
+          "Admin — Clientes"
+        ],
+        "summary": "Enviar email de oferta a cliente inactivo",
+        "description": "Envía un email HTML con los planes disponibles. Limitado a **1 email por día** por usuario (verificado via `ultimo_email_oferta` en el JSON). **Requiere rol 2.**",
+        "operationId": "adminEnviarOferta",
+        "security": [
+          {
+            "sessionAdmin": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "user_id"
+                ],
+                "properties": {
+                  "user_id": {
+                    "type": "integer"
+                  }
+                }
+              },
+              "example": {
+                "user_id": 7
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Resultado del envío",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "ok": {
+                    "value": {
+                      "success": true,
+                      "message": "Email enviado a cliente@example.com"
+                    }
+                  },
+                  "spam": {
+                    "value": {
+                      "success": false,
+                      "message": "Ya se envió un email a este usuario hoy"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/index.php?c=adminUsuarios&a=PagosPendientes": {
+      "get": {
+        "tags": [
+          "Admin — Clientes"
+        ],
+        "summary": "Lista de pagos pendientes de aprobación",
+        "description": "Devuelve todos los pagos con `estado = pendiente_pago`. Incluye `urgente: true` si ya pasaron ≥2 días. **Requiere rol 2.**",
+        "operationId": "adminPagosPendientes",
+        "security": [
+          {
+            "sessionAdmin": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de pagos pendientes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagosPendientesResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/index.php?c=adminUsuarios&a=Inactivos": {
+      "get": {
+        "tags": [
+          "Admin — Clientes"
+        ],
+        "summary": "Clientes inactivos o suspendidos",
+        "description": "Lista de clientes con estado `inactivo` o `suspendido` para campañas de email. **Requiere rol 2.**",
+        "operationId": "adminInactivos",
+        "security": [
+          {
+            "sessionAdmin": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de clientes inactivos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "clientes": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ClienteInactivo"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/index.php?c=pago&a=Index": {
+      "get": {
+        "tags": [
+          "Pagos"
+        ],
+        "summary": "Vista de planes y pagos",
+        "description": "Muestra los planes disponibles con precios por período y el historial del último comprobante. **Requiere sesión activa (rol 1).**",
+        "operationId": "pagoIndex",
+        "security": [
+          {
+            "sessionCliente": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Vista HTML de planes"
+          }
+        }
+      }
+    },
+    "/index.php?c=pago&a=ProcesarPago": {
+      "post": {
+        "tags": [
+          "Pagos"
+        ],
+        "summary": "Procesar pago y subir comprobante",
+        "description": "Sube el comprobante, calcula carry-over de días restantes y guarda `registro_pago` en `configuracion_json`. El pago queda en estado `pendiente_pago` hasta que el admin lo apruebe.\n\n**Lógica carry-over:**\n- Renovación → suma días restantes al nuevo período\n- Upgrade → transfiere días proporcionales\n- Downgrade → bloqueado",
+        "operationId": "procesarPago",
+        "security": [
+          {
+            "sessionCliente": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "plan",
+                  "periodo",
+                  "comprobante"
+                ],
+                "properties": {
+                  "plan": {
+                    "type": "string",
+                    "enum": [
+                      "explorador_urbano",
+                      "aventura_andina",
+                      "premium_paceno"
+                    ]
+                  },
+                  "periodo": {
+                    "type": "string",
+                    "enum": [
+                      "weekly",
+                      "monthly",
+                      "yearly"
+                    ]
+                  },
+                  "comprobante": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Imagen JPG/PNG del comprobante"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Resultado del procesamiento",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "ok": {
+                    "value": {
+                      "success": true,
+                      "message": "Comprobante recibido. Tu pago está pendiente de verificación.",
+                      "dias_totales": 30,
+                      "carryover": 5
+                    }
+                  },
+                  "error": {
+                    "value": {
+                      "success": false,
+                      "message": "Tipo de archivo no permitido."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/index.php?c=pago&a=EstadoPlan": {
+      "get": {
+        "tags": [
+          "Pagos"
+        ],
+        "summary": "Estado actual del plan del usuario",
+        "description": "Devuelve el estado calculado del plan desde la sesión. No hace consultas a BD.",
+        "operationId": "estadoPlan",
+        "security": [
+          {
+            "sessionCliente": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Estado del plan",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanEstado"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/index.php?c=buscar&a=Index": {
+      "get": {
+        "tags": [
+          "Buscar"
+        ],
+        "summary": "Vista de búsqueda de atracciones",
+        "operationId": "buscarIndex",
+        "security": [
+          {
+            "sessionCliente": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Vista HTML"
+          }
+        }
+      }
+    },
+    "/index.php?c=buscar&a=ObtenerTodas": {
+      "get": {
+        "tags": [
+          "Buscar"
+        ],
+        "summary": "Obtener todas las atracciones",
+        "description": "Devuelve el catálogo completo de atracciones activas.",
+        "operationId": "obtenerTodasAtracciones",
+        "responses": {
+          "200": {
+            "description": "Lista de atracciones",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "atracciones": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Atraccion"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/index.php?c=recomendaciones&a=index": {
+      "get": {
+        "tags": [
+          "Recomendaciones"
+        ],
+        "summary": "Vista de recomendaciones IA",
+        "description": "Renderiza la vista de recomendaciones personalizadas. **Requiere plan activo o en gracia.**",
+        "operationId": "recomendacionesIndex",
+        "security": [
+          {
+            "sessionCliente": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Vista HTML"
+          }
+        }
+      }
+    },
+    "/index.php?c=recomendaciones&a=ObtenerModeloMR": {
+      "get": {
+        "tags": [
+          "Recomendaciones"
+        ],
+        "summary": "Obtener recomendaciones del modelo IA",
+        "description": "Devuelve recomendaciones personalizadas generadas por el modelo RNN.",
+        "operationId": "obtenerRecomendaciones",
+        "security": [
+          {
+            "sessionCliente": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de recomendaciones",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "recomendaciones": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Recomendacion"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/index.php?c=historial&a=Index": {
+      "get": {
+        "tags": [
+          "Historial"
+        ],
+        "summary": "Vista de historial de viajes",
+        "description": "Accesible incluso con plan bloqueado.",
+        "operationId": "historialIndex",
+        "security": [
+          {
+            "sessionCliente": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Vista HTML del historial"
+          }
+        }
+      }
+    },
+    "/index.php?c=favoritos&a=Index": {
+      "get": {
+        "tags": [
+          "Favoritos"
+        ],
+        "summary": "Vista de favoritos",
+        "description": "Accesible incluso con plan bloqueado.",
+        "operationId": "favoritosIndex",
+        "security": [
+          {
+            "sessionCliente": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Vista HTML de favoritos"
+          }
+        }
+      }
+    },
+    "/index.php?c=itinerarios&a=Index": {
+      "get": {
+        "tags": [
+          "Itinerarios"
+        ],
+        "summary": "Vista de itinerarios",
+        "description": "**Requiere plan activo o en gracia.**",
+        "operationId": "itinerariosIndex",
+        "security": [
+          {
+            "sessionCliente": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Vista HTML"
+          }
+        }
+      }
+    },
+    "/index.php?c=resenas&a=Index": {
+      "get": {
+        "tags": [
+          "Reseñas"
+        ],
+        "summary": "Vista de reseñas",
+        "description": "**Requiere plan activo o en gracia.**",
+        "operationId": "resenasIndex",
+        "security": [
+          {
+            "sessionCliente": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Vista HTML"
+          }
+        }
+      }
+    },
+    "/index.php?c=perfil&a=Index": {
+      "get": {
+        "tags": [
+          "Perfil"
+        ],
+        "summary": "Vista de perfil del usuario",
+        "description": "**Requiere plan activo o en gracia.**",
+        "operationId": "perfilIndex",
+        "security": [
+          {
+            "sessionCliente": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Vista HTML del perfil"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "sessionCliente": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "PHPSESSID",
+        "description": "Sesión PHP activa con `rol = 1` (cliente)"
+      },
+      "sessionAdmin": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "PHPSESSID",
+        "description": "Sesión PHP activa con `rol = 2` (administrador)"
+      }
+    },
+    "schemas": {
+      "LoginRequest": {
+        "type": "object",
+        "required": [
+          "CorreoElectronico",
+          "Contrasena"
+        ],
+        "properties": {
+          "CorreoElectronico": {
+            "type": "string",
+            "format": "email"
+          },
+          "Contrasena": {
+            "type": "string",
+            "minLength": 6
+          }
+        }
+      },
+      "LoginResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "`true` si el login fue exitoso (independientemente del estado del plan)"
+          },
+          "message": {
+            "type": "string",
+            "description": "Mensaje para mostrar al usuario"
+          },
+          "error_type": {
+            "type": "string",
+            "nullable": true,
+            "description": "Código del tipo de situación. `null` cuando todo está OK.",
+            "enum": [
+              null,
+              "not_verified",
+              "gracia",
+              "bloqueado",
+              "sin_plan",
+              "cuenta_inactiva"
+            ]
+          },
+          "redirect": {
+            "type": "string",
+            "nullable": true,
+            "description": "URL de redirección si `success: true`. `null` si el login falló."
+          },
+          "plan_estado": {
+            "nullable": true,
+            "description": "Objeto con el estado del plan. Solo presente para rol 1 (clientes). `null` para admin.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PlanEstado"
+              }
+            ]
+          }
+        }
+      },
+      "SimpleResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "AdminStats": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "total_usuarios": {
+            "type": "integer"
+          },
+          "usuarios_activos": {
+            "type": "integer"
+          },
+          "nuevos_hoy": {
+            "type": "integer"
+          },
+          "pagos_activos": {
+            "type": "integer"
+          },
+          "pagos_pendientes": {
+            "type": "integer"
+          },
+          "total_atracciones": {
+            "type": "integer"
+          },
+          "atracciones_activas": {
+            "type": "integer"
+          },
+          "total_recomendaciones": {
+            "type": "integer"
+          },
+          "rec_este_mes": {
+            "type": "integer"
+          }
+        }
+      },
+      "UsuarioResumen": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "nombre": {
+            "type": "string"
+          },
+          "apellido": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "estado": {
+            "type": "string"
+          },
+          "configuracion_json": {
+            "type": "string",
+            "description": "JSON con registro_pago y preferencias"
+          }
+        }
+      },
+      "ClienteDetalle": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "nombre": {
+            "type": "string"
+          },
+          "apellido": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "telefono": {
+            "type": "string"
+          },
+          "estado": {
+            "type": "string",
+            "enum": [
+              "activo",
+              "inactivo",
+              "suspendido",
+              "pendiente_correo"
+            ]
+          },
+          "pago_estado": {
+            "type": "string",
+            "enum": [
+              "pendiente_pago",
+              "activo_pagado",
+              "rechazado"
+            ],
+            "nullable": true
+          },
+          "pago_plan": {
+            "type": "string",
+            "nullable": true
+          },
+          "pago_monto": {
+            "type": "number",
+            "nullable": true
+          },
+          "pago_periodo": {
+            "type": "string",
+            "enum": [
+              "weekly",
+              "monthly",
+              "yearly"
+            ],
+            "nullable": true
+          },
+          "pago_fecha": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "pago_vencimiento": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "pago_comprobante": {
+            "type": "string",
+            "description": "Ruta relativa al archivo",
+            "nullable": true
+          },
+          "pago_motivo": {
+            "type": "string",
+            "nullable": true
+          },
+          "pago_dias_totales": {
+            "type": "integer",
+            "nullable": true
+          },
+          "historial_estado": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HistorialEstado"
+            }
+          },
+          "emails_enviados": {
+            "type": "integer"
+          },
+          "ultimo_email": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        }
+      },
+      "ClienteDetalleResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "cliente": {
+            "$ref": "#/components/schemas/ClienteDetalle"
+          }
+        }
+      },
+      "ClientesListResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "clientes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ClienteDetalle"
+            }
+          },
+          "total": {
+            "type": "integer"
+          },
+          "page": {
+            "type": "integer"
+          },
+          "per_page": {
+            "type": "integer"
+          },
+          "pages": {
+            "type": "integer"
+          }
+        }
+      },
+      "ClienteInactivo": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "nombre": {
+            "type": "string"
+          },
+          "apellido": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "estado": {
+            "type": "string"
+          },
+          "ultimo_plan": {
+            "type": "string",
+            "nullable": true
+          },
+          "vencimiento": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "ultimo_email": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "emails_enviados": {
+            "type": "integer"
+          }
+        }
+      },
+      "HistorialEstado": {
+        "type": "object",
+        "properties": {
+          "estado_anterior": {
+            "type": "string"
+          },
+          "estado_nuevo": {
+            "type": "string"
+          },
+          "admin_id": {
+            "type": "integer"
+          },
+          "motivo": {
+            "type": "string"
+          },
+          "fecha": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "PagosPendientesResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "total": {
+            "type": "integer"
+          },
+          "pagos": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "integer"
+                },
+                "nombre": {
+                  "type": "string"
+                },
+                "apellido": {
+                  "type": "string"
+                },
+                "email": {
+                  "type": "string"
+                },
+                "plan": {
+                  "type": "string"
+                },
+                "monto": {
+                  "type": "number"
+                },
+                "periodo": {
+                  "type": "string"
+                },
+                "fecha_pago": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "comprobante": {
+                  "type": "string"
+                },
+                "dias_pendiente": {
+                  "type": "integer",
+                  "description": "Días desde que se subió el comprobante"
+                },
+                "urgente": {
+                  "type": "boolean",
+                  "description": "true si dias_pendiente >= 2"
+                }
+              }
+            }
+          }
+        }
+      },
+      "PlanEstado": {
+        "type": "object",
+        "description": "Estado calculado del plan del cliente. Generado por `LoginController::calcularEstadoPlan()`.",
+        "properties": {
+          "estado": {
+            "type": "string",
+            "enum": [
+              "activo",
+              "gracia",
+              "bloqueado",
+              "sin_plan"
+            ],
+            "description": "Estado general del plan"
+          },
+          "dias_restantes": {
+            "type": "integer",
+            "description": "Días que quedan de plan vigente. 0 si vencido."
+          },
+          "dias_vencido": {
+            "type": "integer",
+            "description": "Días desde que venció el plan. 0 si aún vigente."
+          },
+          "dias_gracia_restantes": {
+            "type": "integer",
+            "description": "Días de gracia restantes (máx 3). 0 fuera del período de gracia."
+          },
+          "plan_nombre": {
+            "type": "string",
+            "nullable": true,
+            "description": "Nombre del plan contratado. `null` si no tiene plan.",
+            "enum": [
+              "Explorador Urbano",
+              "Aventura Andina",
+              "Premium Paceño",
+              null
+            ]
+          },
+          "puede_navegar": {
+            "type": "boolean",
+            "description": "`true` si el usuario puede acceder a secciones restringidas"
+          },
+          "es_gracia": {
+            "type": "boolean",
+            "description": "`true` si está en el período de gracia"
+          },
+          "es_bloqueado": {
+            "type": "boolean",
+            "description": "`true` si el plan está vencido y sin gracia. Solo puede ir a Pago/Historial/Favoritos."
+          }
+        }
+      },
+      "Atraccion": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "nombre": {
+            "type": "string"
+          },
+          "descripcion": {
+            "type": "string"
+          },
+          "categoria": {
+            "type": "string"
+          },
+          "ubicacion": {
+            "type": "string"
+          },
+          "imagen": {
+            "type": "string"
+          },
+          "activa": {
+            "type": "boolean"
+          }
+        }
+      },
+      "Recomendacion": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "atraccion_id": {
+            "type": "integer"
+          },
+          "nombre": {
+            "type": "string"
+          },
+          "score": {
+            "type": "number",
+            "description": "Puntuación de afinidad 0-1"
+          },
+          "motivo": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}
