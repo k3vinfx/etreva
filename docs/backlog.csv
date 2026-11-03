@@ -1,0 +1,53 @@
+﻿orden;codigo;tipo;eje;descripcion;prioridad;complejidad;puntos;sprint
+1;RT1;Técnico;Infraestructura;Configurar backend con PHP + PostgreSQL.;Alta;Media;3;1
+2;RT4;Técnico;Infraestructura;Definir arquitectura cliente-servidor frontend/backend.;Alta;Media;3;1
+3;RT3;Técnico;Infraestructura;Configurar framework MVC y Bootstrap 5 para frontend responsivo.;Alta;Media;3;1
+4;RT6;Técnico;Datos;Diseñar base de datos relacional para usuarios, preferencias e itinerarios y el modelo de RNR.;Alta;Alta;5;1
+5;RF23;Funcional;E5;Habilitar base de datos centralizada para reemplazar hojas de cálculo.;Alta;Media;3;1
+6;RNF4;No funcional;ENF4;Garantizar compatibilidad con navegadores modernos.;Alta;Baja;1;1
+7;RNF5;No funcional;ENF3;Definir lineamientos de diseño responsive móvil, tablet y desktop.;Alta;Media;3;1
+8;RNF3;No funcional;ENF3;Establecer criterios de usabilidad e interfaz intuitiva.;Alta;Media;3;1
+9;RNF1;No funcional;ENF1;Definir esquema de seguridad de acceso y cifrado de contraseñas.;Alta;Alta;5;1
+10;RNF8;No funcional;ENF5;Definir lineamientos de mantenibilidad y actualización de código.;Media;Media;3;1
+11;RF1;Funcional;E1;Implementar registro de nuevos usuarios con datos demográficos.;Alta;Media;3;2
+12;RF2;Funcional;E1;Implementar autenticación segura de usuarios.;Alta;Media;3;2
+13;RF3;Funcional;E1;Implementar recuperación de cuenta por correo electrónico.;Alta;Media;3;2
+14;RF4;Funcional;E1;Permitir gestión y actualización del perfil de usuario.;Alta;Media;3;2
+15;RF26;Funcional;E5;Gestionar roles turista/administrador con permisos diferenciados.;Alta;Alta;5;2
+16;RF5;Funcional;E1;Permitir captura de preferencias turísticas iniciales.;Alta;Media;3;2
+17;RF6;Funcional;E1;Configurar parámetros de viaje (duración, presupuesto, tipo de grupo).;Alta;Media;3;2
+18;RF27;Funcional;E1;Habilitar formularios de contacto para información adicional.;Media;Baja;1;2
+19;RT8;Técnico;Datos;Modelar datos de geolocalización de atracciones (latitud, longitud, zona).;Alta;Media;3;3
+20;RT9;Técnico;Integración;Integrar API de mapas para visualizar rutas y puntos de interés.;Media;Alta;5;3
+21;RF25;Funcional;E5;Crear panel administrativo para gestionar catálogo de atracciones.;Alta;Alta;5;3
+22;RF31;Funcional;E5;Gestionar categorías y subcategorías de atracciones (miradores, gastronomía, etc.).;Alta;Media;3;3
+23;RF29;Funcional;E5;Permitir actualización dinámica de nuevos atractivos en el catálogo.;Alta;Media;3;3
+24;RF10;Funcional;E3;Visualizar atracciones categorizadas por tipo y popularidad.;Alta;Media;3;3
+25;RF24;Funcional;E5;Habilitar gestión básica de contenido multilingüe (español/inglés).;Baja;Media;3;3
+26;RNF13;No funcional;ENF4;Asegurar capacidad de integración con APIs de mapas y geolocalización.;Baja;Media;3;3
+27;RT2;Técnico;IA;Implementar red neuronal recurrente con Brain.js para recomendaciones.;Alta;Alta;5;4
+28;RT7;Técnico;IA;Definir almacenamiento de datos de entrenamiento y ajuste de la RNR.;Alta;Alta;5;4
+29;RF7;Funcional;E2;Generar recomendaciones iniciales basadas en perfil demográfico.;Alta;Alta;5;4
+30;RF21;Funcional;E2;Aplicar segmentación por edad y tipo de grupo de viaje.;Alta;Media;3;4
+31;RF9;Funcional;E2;Priorizar miradores (~90%) y aventura (~80%) en las recomendaciones.;Alta;Media;3;4
+32;RF20;Funcional;E2;Ofrecer recomendaciones geográficas por zonas de La Paz.;Alta;Media;3;4
+33;RF8;Funcional;E2;Permitir recomendaciones adaptativas en tiempo real según interacción.;Alta;Alta;5;4
+34;RNF6;No funcional;ENF2;Soportar múltiples usuarios concurrentes sin degradación crítica.;Alta;Alta;5;4
+35;RF11;Funcional;E3;Implementar filtrado avanzado por precio, distancia y duración.;Alta;Media;3;5
+36;RF12;Funcional;E3;Desarrollar constructor de itinerarios interactivos.;Alta;Alta;5;5
+37;RF14;Funcional;E3;Gestionar y editar itinerarios personales guardados.;Alta;Media;3;5
+38;RF15;Funcional;E3;Mostrar previsualización de itinerarios en mapa con tiempos estimados.;Alta;Alta;5;5
+39;RF16;Funcional;E3;Generar itinerarios alternativos según preferencias.;Media;Alta;5;5
+40;RF19;Funcional;E3;Permitir exportación de itinerarios en PDF u otros formatos compartibles.;Media;Media;3;5
+41;RF28;Funcional;E3;Consolidar flujo que reduzca el tiempo de atención de 45 a 15 minutos.;Alta;Alta;5;5
+42;RNF11;No funcional;ENF3;Verificar compatibilidad con distintos dispositivos y tamaños de pantalla.;Media;Media;3;5
+43;RF18;Funcional;E4;Registrar historial de búsquedas e interacciones del usuario.;Media;Media;3;6
+44;RF22;Funcional;E4;Configurar motor de aprendizaje continuo de la RNR.;Alta;Alta;5;6
+45;RF17;Funcional;E4;Habilitar sistema de calificación y comentarios post-experiencia.;Media;Media;3;6
+46;RF30;Funcional;E4;Implementar módulo de reportes sobre preferencias y tendencias.;Media;Alta;5;6
+47;RNF2;No funcional;ENF2;Optimizar tiempo de respuesta a ≤ 2 segundos en operaciones críticas.;Alta;Alta;5;6
+48;RNF10;No funcional;ENF2;Optimizar rendimiento de imágenes, mapas y multimedia.;Media;Alta;5;6
+49;RNF14;No funcional;ENF2;Configurar caché para contenido estático y consultas frecuentes.;Media;Media;3;6
+50;RNF9;No funcional;ENF3;Asegurar cumplimiento básico de accesibilidad WCAG 2.1 AA.;Media;Media;3;6
+51;RNF12;No funcional;ENF5;Elaborar documentación técnica para soporte y evolución del sistema.;Media;Media;3;6
+52;RNF15;No funcional;ENF1;Implementar mecanismos de backup y recuperación de datos.;Alta;Alta;5;6
