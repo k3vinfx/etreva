@@ -1,0 +1,7 @@
+{
+    "require": {
+        "phpmailer/phpmailer": "^7.0",
+        "zircote/swagger-php": "^6.0",
+        "dompdf/dompdf": "^3.1"
+    }
+}

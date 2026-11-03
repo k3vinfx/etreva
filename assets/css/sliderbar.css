@@ -1,0 +1,25 @@
+.barra-lateral {
+    width: 250px;
+    height: 100vh;
+    position: fixed;
+    background: var(--card-bg);
+    box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+.barra-lateral.mini-barra-lateral {
+    width: 80px;
+}
+
+.barra-lateral nav ul li a {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    color: var(--text-color);
+    text-decoration: none;
+}
+
+.barra-lateral nav ul li a:hover {
+    background-color: var(--primary-color);
+    color: #fff;
+}

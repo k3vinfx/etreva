@@ -1,0 +1,21 @@
+.carousel {
+    display: flex;
+    overflow: hidden;
+    border-radius: 16px;
+}
+
+.carousel-wrapper {
+    display: flex;
+    transition: transform 1s ease;
+}
+
+.carousel-item {
+    min-width: 100%;
+    flex-shrink: 0;
+}
+
+.carousel-item img {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+}

@@ -1,0 +1,138 @@
+/* ============================================================
+   assets/css/tema-claro.css
+   Tema claro global. Se activa con <html class="tema-claro"> (menu.php).
+   1) Redefine las variables de color que usan las páginas
+      (html.tema-claro tiene más especificidad que :root de cada vista).
+   2) Estiliza los componentes compartidos (sidebar, overlays, modales).
+   Los colores fijos restantes los corrige assets/js/tema.js.
+   ============================================================ */
+
+html.tema-claro {
+    color-scheme: light;
+
+    /* Paleta base */
+    --tc-bg:      #f3f5fa;
+    --tc-surf:    #ffffff;
+    --tc-surf2:   #eef1f7;
+    --tc-border:  rgba(15, 23, 42, .12);
+    --tc-text:    #0f172a;
+    --tc-muted:   #556070;
+
+    /* Vistas de administración */
+    --bg: var(--tc-bg);          --bg2: var(--tc-surf2);
+    --surface: var(--tc-surf);   --surf: var(--tc-surf);   --surf2: var(--tc-surf2);
+    --card: var(--tc-surf);      --card2: var(--tc-surf2);
+    --border: var(--tc-border);  --border2: rgba(15, 23, 42, .18);
+    --text: var(--tc-text);      --muted: var(--tc-muted);
+
+    --adm-bg: var(--tc-bg);      --adm-surface: var(--tc-surf);  --adm-card: var(--tc-surf);
+    --adm-border: var(--tc-border); --adm-text: var(--tc-text);  --adm-muted: var(--tc-muted);
+
+    /* Vistas de cliente */
+    --bg-deep: var(--tc-surf2);  --bg-base: var(--tc-bg);
+    --bg-primary: var(--tc-bg);  --bg-card: var(--tc-surf);      --bg-card-solid: var(--tc-surf);
+    --text-primary: var(--tc-text); --text-muted: var(--tc-muted); --text-light: var(--tc-text);
+    --text-overlay: var(--tc-text); --border-light: var(--tc-border);
+
+    /* Formularios (perfil y otros) */
+    --bg-input: #ffffff;  --border-focus: #6366f1;  --input-bg: #ffffff;
+
+    /* Menú */
+    --color-text: var(--tc-text);
+    --color-text-secondary: var(--tc-muted);
+    --color-bg-main: var(--tc-bg);
+}
+
+html.tema-claro,
+html.tema-claro body,
+html.tema-claro main {
+    background-color: var(--tc-bg) !important;
+    color: var(--tc-text);
+}
+
+/* ── Barra lateral clara ─────────────────────────────────────── */
+html.tema-claro .barra-lateral {
+    background: #ffffff !important;
+    color: var(--tc-text);
+    border-right: 1px solid var(--tc-border);
+    box-shadow: 4px 0 18px rgba(15, 23, 42, .06);
+}
+html.tema-claro .barra-lateral .nombre-pagina span { color: var(--tc-text) !important; }
+html.tema-claro .barra-lateral .navegacion a { color: #334155 !important; }
+html.tema-claro .barra-lateral .navegacion a:hover,
+html.tema-claro .barra-lateral .navegacion a.active {
+    background: rgba(52, 152, 219, .12) !important;
+    color: #0f172a !important;
+}
+html.tema-claro .barra-lateral .linea,
+html.tema-claro .barra-lateral .nombre-pagina { border-color: var(--tc-border) !important; }
+html.tema-claro .barra-lateral .linea { background: var(--tc-border) !important; }
+html.tema-claro .barra-lateral .modo-oscuro,
+html.tema-claro .barra-lateral .usuario,
+html.tema-claro .barra-lateral .sb-lang-wrap { color: var(--tc-text) !important; }
+html.tema-claro .barra-lateral .usuario .email { color: var(--tc-muted) !important; }
+html.tema-claro .barra-lateral .base { background: #cbd5e1 !important; }
+html.tema-claro .barra-lateral .sb-lang-btn {
+    background: #f1f5f9; border-color: var(--tc-border); color: #334155;
+}
+html.tema-claro .barra-lateral .sb-lang-btn:hover { background: #e2e8f0; color: #0f172a; }
+html.tema-claro .barra-lateral .sb-lang-btn.active { background: #0284c7; border-color: #0284c7; color: #fff; }
+html.tema-claro .menu { background: #ffffff; color: var(--tc-text); }
+
+/* ── Overlays y modales del menú: fondo atenuado + tarjeta clara ── */
+html.tema-claro #bloqOverlay,
+html.tema-claro #rechazadoOverlay,
+html.tema-claro #pendienteOverlay,
+html.tema-claro #pendienteVencidoOverlay,
+html.tema-claro #soporteModal { background: rgba(15, 23, 42, .45) !important; }
+
+html.tema-claro .bloq-card,
+html.tema-claro .sop-card,
+html.tema-claro .gracia-inner {
+    background: #ffffff !important;
+    color: var(--tc-text);
+    box-shadow: 0 20px 50px rgba(15, 23, 42, .25);
+}
+html.tema-claro .bloq-card h2,
+html.tema-claro .sop-card h3,
+html.tema-claro .gracia-body h4 { color: var(--tc-text) !important; }
+html.tema-claro .bloq-card p,
+html.tema-claro .sop-sub,
+html.tema-claro .gracia-body p,
+html.tema-claro .opcion,
+html.tema-claro .step-item { color: #475569 !important; }
+html.tema-claro .motivo-box .motivo-txt,
+html.tema-claro .sop-caja { color: #1e293b !important; }
+html.tema-claro .sop-caja { background: #f8fafc !important; border-color: var(--tc-border) !important; }
+html.tema-claro .sop-txt { background: #ffffff !important; color: var(--tc-text) !important; border-color: rgba(15, 23, 42, .2) !important; }
+html.tema-claro .btn-contacto,
+html.tema-claro .bloq-lnk { background: #f1f5f9 !important; color: #334155 !important; border-color: var(--tc-border) !important; }
+html.tema-claro .btn-contacto:hover,
+html.tema-claro .bloq-lnk:hover { background: #e2e8f0 !important; color: #0f172a !important; }
+html.tema-claro .sop-paso i { background: #ffffff; border-color: #cbd5e1; }
+html.tema-claro .sop-paso { color: #64748b; }
+html.tema-claro .sop-paso.hecho { color: #0f172a; }
+html.tema-claro .sop-x { color: #94a3b8; }
+
+/* ── Bootstrap / SweetAlert / Toastr comunes ─────────────────── */
+html.tema-claro .modal-content,
+html.tema-claro .swal2-popup,
+html.tema-claro .dropdown-menu {
+    background: #ffffff !important;
+    color: var(--tc-text) !important;
+}
+html.tema-claro .swal2-title,
+html.tema-claro .swal2-html-container { color: var(--tc-text) !important; }
+html.tema-claro .form-control,
+html.tema-claro .form-select,
+html.tema-claro input,
+html.tema-claro select,
+html.tema-claro textarea {
+    color-scheme: light;
+}
+html.tema-claro ::placeholder { color: #94a3b8 !important; opacity: 1; }
+html.tema-claro select option { background: #ffffff !important; color: #0f172a !important; }
+
+/* Scrollbars */
+html.tema-claro ::-webkit-scrollbar-track { background: #eef1f7; }
+html.tema-claro ::-webkit-scrollbar-thumb { background: #cbd5e1; }

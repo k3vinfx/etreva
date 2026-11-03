@@ -1,0 +1,684 @@
+/* Elimina el backdrop por defecto de Bootstrap */
+.modal-backdrop {
+    display: none !important;
+}
+    
+    /* Estilos para las opciones del chatbot */
+        .chat-options {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .btn-option {
+            padding: 8px 12px;
+            background: linear-gradient(135deg, #189561 0%, #03A9F4 100%);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .btn-option:hover {
+            transform: translateX(5px);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+        }
+
+       
+        
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(24, 149, 97, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(24, 149, 97, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(24, 149, 97, 0);
+            }
+        }
+        
+        .error {
+            color: #dc3545;
+            font-size: 0.875em;
+        }
+        .is-invalid {
+            border-color: #dc3545;
+        }
+          :root {
+            --primary-color: #3498db1f;
+            --secondary-color: #2c3e50;
+            --success-color: #2ecc71;
+            --light-bg: #f8f9fa;
+            --dark-bg: #343a40;
+        }
+        
+        body {
+            font-size: 0.9rem;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(-45deg, #f5f7fa 0%, #e8f0fe 50%, #f5f7fa 100%);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            margin: 0;
+            padding: 0;
+        }
+        
+            @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        /* Mejora para los botones de filtro */
+        #filtroEstadoGroup label {
+            transition: all 0.3s ease;
+            margin: 0 3px;
+        }
+
+        #filtroEstadoGroup label.active {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.89);
+        }
+
+        #filtroEstadoGroup label.btn-outline-primary.active {
+            background: rgba(52, 152, 219, 0.89);
+        }
+
+        #filtroEstadoGroup label.btn-outline-success.active {
+            background: rgba(46, 204, 112, 0.89);
+        }
+
+        #filtroEstadoGroup label.btn-outline-secondary.active {
+            background: rgba(108, 117, 125, 0.89);
+        }
+        .bg-primary {
+        background-color: rgb(44, 62, 80) !important;
+    }
+
+      /* Efecto de elevación para el contenedor principal */
+        .container {
+            background-color:  rgba(233, 233, 233, 0.95);
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            margin-top: 15px;
+            margin-bottom: 1px;
+            max-width: 95%;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        #wave-interference {
+            position: absolute;
+            top: -43%;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -3;
+            opacity: 0.7;
+        }
+        .container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(1, 109, 34, 0.59);
+        }
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            margin-bottom: 0px;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+
+        }
+        
+        .card-header {
+            background-color: var(--secondary-color);
+            color: white;
+            font-weight: 500;
+            border-radius: 10px 10px 0 0 !important;
+            padding: 15px 20px;
+            font-size: 1.1rem;
+        }
+        
+        .card-body {
+            padding: 2px;
+        }
+        
+        .table {
+            margin-bottom: 0;
+        }
+            .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        width: 100%;
+        }
+
+         #tablaProductosSerigraficos {
+        width: 100% !important;
+        }
+        .table thead th {
+            background-color: var(--secondary-color);
+            color: white;
+            border-bottom: none;
+            font-weight: 500;
+            padding: 12px 15px;
+        }
+        
+        .table tbody tr {
+            transition: all 0.2s ease;
+        }
+        
+        .table tbody tr:hover {
+            background-color: rgba(52, 152, 219, 0.05);
+        }
+        
+        .table tbody td {
+            padding: 12px 15px;
+            vertical-align: middle;
+        }
+        
+        .btn {
+            font-weight: 500;
+            padding: 8px 15px;
+            border-radius: 6px;
+          transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+            .btn:after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 5px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.5);
+            opacity: 0;
+            border-radius: 100%;
+            transform: scale(1, 1) translate(-50%);
+            transform-origin: 50% 50%;
+        }
+        
+        .btn:focus:after,
+        .btn:hover:after {
+            animation: ripple 1s ease-out;
+        }
+
+        @keyframes ripple {
+            0% {
+                transform: scale(0, 0);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(20, 20);
+                opacity: 0;
+            }
+        }
+        .btn-success {
+            background-color: var(--success-color);
+            border-color: var(--success-color);
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-outline-primary {
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-outline-primary:hover {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .btn-outline-success {
+            color: var(--success-color);
+            border-color: var(--success-color);
+        }
+        
+        .btn-outline-success:hover {
+            background-color: var(--success-color);
+            color: white;
+        }
+        
+        .btn-outline-secondary {
+            color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+        
+        .btn-outline-secondary:hover {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+        
+        .custom-control-input:checked~.custom-control-label::before {
+            background-color: var(--success-color);
+            border-color: var(--success-color);
+        }
+        
+        
+        /* Corrige el z-index del sidebar para que no interfiera */
+        .sidebar {
+            z-index: 1030 !important; /* Debe ser menor que el modal (1050) */
+        }
+
+        /* Asegura que el modal sea visible */
+    
+        .error {
+            color: #e74c3c;
+            font-size: 0.85rem;
+            margin-top: 5px;
+        }
+        
+        .is-invalid {
+            border-color: #e74c3c;
+        }
+        
+        .page-title {
+            color: var(--secondary-color);
+            margin-bottom: 25px;
+            font-weight: 600;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+            display: inline-block;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .status-active {
+            background-color: rgba(46, 204, 113, 0.2);
+            color: var(--success-color);
+        }
+        
+        .status-inactive {
+            background-color: rgba(231, 76, 60, 0.2);
+            color: #e74c3c;
+        }
+        
+        .action-btn {
+            width: 35px;
+            height: 35px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            margin: 0 3px;
+        }
+        
+        .search-box {
+            position: relative;
+        }
+        
+        .search-box .form-control {
+            font-size: 0.8rem;
+            padding-left: 40px;
+            border-radius: 20px;
+        }
+        
+        .search-box .search-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #7f8c8d;
+        }
+
+        
+        /* Efecto para las filas de la tabla */
+        .table tbody tr {
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .table tbody tr:hover {
+            background-color: rgba(52, 152, 219, 0.05);
+            transform: scale(1.005);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Efecto para los inputs */
+        .form-control {
+            transition: all 0.3s ease;
+            border: 1px solid #ddd;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+            transform: scale(1.02);
+        }
+ /* Asegurar que el select sea visible */
+        .form-control:focus, .form-control:hover {
+            border-color: #3498db;
+            box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+        }
+
+        /* Forzar visualización del valor seleccionado */
+        select.form-control option:checked {
+            background: #3498db linear-gradient(0deg, #3498db 0%, #3498db 100%);
+            color: white;
+        }
+
+        /* Estilos específicos para el select */
+        select.form-control {
+            -webkit-appearance: menulist !important;
+            -moz-appearance: menulist !important;
+            appearance: menulist !important;
+            background-color: white !important;
+            padding: 0.375rem 0.75rem !important;
+            height: auto !important;
+        }
+
+        /* Estilo para las opciones */
+        select.form-control option {
+            background-color: white;
+            color: #495057;
+            padding: 5px;
+        }
+
+        /* Estilo para la opción seleccionada */
+        select.form-control option:checked {
+            background-color: #3498db !important;
+            color: white !important;
+        }
+
+        /* Resto de tus estilos existentes... */
+        .error {
+            color: #dc3545;
+            font-size: 0.875em;
+        }
+        
+        .is-invalid {
+            border-color: #dc3545;
+        }
+        
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2c3e50;
+            --success-color: #2ecc71;
+            --light-bg: #f8f9fa;
+            --dark-bg: #343a40;
+        }
+        
+        .card-header {
+            background-color: var(--secondary-color);
+            color: white;
+            font-weight: 500;
+            border-radius: 10px 10px 0 0 !important;
+            padding: 15px 20px;
+            font-size: 1.1rem;
+        }
+        
+        .card-body {
+            padding: 20px;
+        }
+        
+        .table {
+            margin-bottom: 0;
+        }
+        
+        .table-responsive {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            width: 100%;
+        }
+
+        #tablaProductosSerigraficos {
+            width: 100% !important;
+        }
+        
+        .table thead th {
+            background-color: var(--secondary-color);
+            color: white;
+            border-bottom: none;
+            font-weight: 500;
+            padding: 12px 15px;
+        }
+        
+        .table tbody td {
+            padding: 12px 15px;
+            vertical-align: middle;
+        }
+        
+        .btn-success {
+            background-color: var(--success-color);
+            border-color: var(--success-color);
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-outline-primary {
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-outline-primary:hover {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .btn-outline-success {
+            color: var(--success-color);
+            border-color: var(--success-color);
+        }
+        
+        .btn-outline-success:hover {
+            background-color: var(--success-color);
+            color: white;
+        }
+        
+        .btn-outline-secondary {
+            color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+        
+        .btn-outline-secondary:hover {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+        
+        .custom-control-input:checked~.custom-control-label::before {
+            background-color: var(--success-color);
+            border-color: var(--success-color);
+        }
+        
+          .error {
+            color: #e74c3c;
+            font-size: 0.85rem;
+            margin-top: 5px;
+        }
+        
+        .page-title {
+            color: var(--secondary-color);
+            margin-bottom: 25px;
+            font-weight: 600;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+            display: inline-block;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .status-active {
+            background-color: rgba(46, 204, 113, 0.2);
+            color: var(--success-color);
+        }
+        
+        .status-inactive {
+            background-color: rgba(231, 76, 60, 0.2);
+            color: #e74c3c;
+        }
+        
+        .action-btn {
+            width: 35px;
+            height: 35px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            margin: 0 3px;
+        }
+        
+        .search-box {
+            position: relative;
+        }
+        
+        .search-box .form-control {
+            padding-left: 40px;
+            border-radius: 20px;
+        }
+        
+        .search-box .search-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #7f8c8d;
+        }
+     
+
+        #fluid-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            opacity: 0.6;
+        }
+
+        
+        /* Botón de estado (Activo/Inactivo) - Efecto Neón */
+        .custom-switch .custom-control-label::before {
+            width: 3.5rem;
+            height: 1.75rem;
+            border-radius: 2rem;
+            background: linear-gradient(145deg, #e6e6e6, #ffffff);
+            box-shadow: 3px 3px 6px #d1d1d1, 
+                        -3px -3px 6px #ffffff;
+            border: none;
+            transition: all 0.4s ease;
+        }
+
+        .custom-switch .custom-control-input:checked~.custom-control-label::before {
+            background: linear-gradient(145deg, #25d366, #2ecc71);
+            box-shadow: 0 0 10px rgba(46, 204, 113, 0.7), 
+                        0 0 20px rgba(46, 204, 113, 0.5),
+                        3px 3px 6px #1e8449, 
+                        -3px -3px 6px #3eff99;
+        }
+
+        .custom-switch .custom-control-label::after {
+            width: calc(1.75rem - 4px);
+            height: calc(1.75rem - 4px);
+            border-radius: 50%;
+            background: white;
+            box-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+            transform: translateX(0.25rem);
+            transition: all 0.3s ease;
+        }
+
+        .custom-switch .custom-control-input:checked~.custom-control-label::after {
+            transform: translateX(1.75rem);
+            background: white;
+            box-shadow: -1px 1px 3px rgba(0,0,0,0.2);
+        }
+
+        /* Botones principales - Efecto Vidrio Morfológico */
+       
+        .file-preview-container {
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        .img-thumbnail {
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .img-thumbnail:hover {
+            transform: scale(1.02);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Efecto de onda al hacer clic */
+        @keyframes ripple-effect {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+
+
+        @keyframes float {
+            0% { transform: translateY(0) translateX(0); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100px) translateX(20px); opacity: 0; }
+        }
+
+
+      
+        .img-thumbnail {
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .img-thumbnail:hover {
+            transform: scale(1.05);
+        }
+        .product-image-container {
+                height: 350px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background-color: #f8f9fa;
+                border-radius: 8px;
+                overflow: hidden;
+            }
+            
+            .product-description-box {
+                min-height: 120px;
+            }
+            
+            .price-box {
+                min-width: 120px;
+                text-align: center;
+            }
+            
+            .size-box {
+                min-width: 100px;
+                text-align: center;
+            }
+            
+            .quantity-section {
+                background-color: #f8f9fa;
+                padding: 1.5rem;
+                border-radius: 8px;
+            }
+            .fade-out {
+                opacity: 0.5;
+                transition: opacity 1.5s ease-out;
+            }

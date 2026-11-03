@@ -1,0 +1,328 @@
+/* ═══════════════════════════════════════════════════════════════
+   recomendaciones.css
+   Los estilos de tarjetas viven en recomendaciones_cards.css
+═══════════════════════════════════════════════════════════════ */
+
+/* ===== VARIABLES ===== */
+:root {
+    --primary:    #667eea;
+    --secondary:  #764ba2;
+    --accent:     #7274ee;
+    --text-primary: #f5f5f5;
+    --text-muted: rgba(255,255,255,0.55);
+    --card-shadow: 0 10px 40px rgba(0,0,0,0.35);
+    --bg-base:    #1a1a2e;
+    --bg-deep:    #0f1629;
+    --border:     rgba(255,255,255,0.07);
+    --muted:      rgba(255,255,255,0.4);
+}
+
+/* ===== RESET FORZADO ===== */
+html, body {
+    background: var(--bg-base) !important;
+    color: #e2e8f0 !important;
+    min-height: 100vh;
+    font-family: 'Syne', 'Inter', 'Segoe UI', system-ui, sans-serif;
+}
+
+/* ===== LAYOUT ===== */
+main {
+    margin-left: 280px;
+    padding: 0;
+    background: var(--bg-base) !important;
+    min-height: 100vh;
+    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+main.min-main { margin-left: 85px; }
+
+/* ════════════════════════════════════════════════════════════════
+   HERO  ─  mismo estilo que itinerarios / resenas
+════════════════════════════════════════════════════════════════ */
+.recomendaciones-hero {
+    background: linear-gradient(135deg, var(--bg-deep) 0%, #1a1040 50%, var(--bg-base) 100%);
+    padding: 48px 24px 36px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+    text-align: center;
+}
+
+/* Orbe superior derecho */
+.recomendaciones-hero::before {
+    content: '';
+    position: absolute;
+    top: -80px; right: -80px;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(102,126,234,.18) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+/* Orbe inferior izquierdo */
+.recomendaciones-hero::after {
+    content: '';
+    position: absolute;
+    bottom: -60px; left: 10%;
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(118,75,162,.12) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+/* Título con gradiente de texto */
+.recomendaciones-hero h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 2.4rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #fff 0%, #b8c3f8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 6px;
+    letter-spacing: -0.5px;
+    position: relative; z-index: 1;
+}
+
+/* El icono también lleva color propio */
+.recomendaciones-hero h1 i {
+    -webkit-text-fill-color: var(--primary);
+    color: var(--primary);
+    margin-right: 10px;
+}
+
+.recomendaciones-hero p {
+    color: var(--muted);
+    font-size: 1rem;
+    font-weight: 300;
+    margin-bottom: 22px;
+    position: relative; z-index: 1;
+}
+
+/* ════════════════════════════════════════════════════════════════
+   PROFILE CARD  (dentro del hero)
+════════════════════════════════════════════════════════════════ */
+.profile-card {
+    background: linear-gradient(135deg, rgba(102,126,234,0.1) 0%, rgba(15,23,42,0.95) 100%) !important;
+    border: 1px solid rgba(102,126,234,0.2);
+    border-radius: 28px;
+    padding: 8px 6px;
+    margin: 9px auto 9px;
+    backdrop-filter: blur(15px);
+    box-shadow: 0 15px 50px rgba(0,0,0,0.5);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    max-width: 1100px;
+    position: relative; z-index: 1;
+}
+
+.profile-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 0;
+}
+
+.profile-avatar {
+    width: 85px; height: 85px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: white;
+    font-size: 1.8rem; font-weight: 800;
+    box-shadow: 0 0 25px rgba(102,126,234,0.4);
+    border: 3px solid rgba(255,255,255,0.1);
+    position: relative;
+}
+
+.profile-avatar::after {
+    content: '';
+    position: absolute; bottom: 1px; right: 1px;
+    width: 14px; height: 14px;
+    background: #2ecc71;
+    border: 3px solid #1a1a2e;
+    border-radius: 50%;
+}
+
+.profile-info h2 { font-size: 1.6rem; letter-spacing: -0.5px; margin-bottom: 5px; }
+.profile-info p  { font-size: 0.9rem; opacity: 0.8; }
+.profile-info p i { margin-right: 5px; color: #667eea; }
+
+/* ── TAGS DE PREFERENCIAS ── */
+.preferences-tags {
+    display: flex; flex-wrap: wrap; justify-content: center;
+    gap: 8px; margin-top: 20px; padding-top: 20px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    width: 100%;
+}
+
+.pref-tag {
+    background: rgba(102,126,234,0.15) !important;
+    border: 1px solid rgba(102,126,234,0.3);
+    padding: 6px 16px; border-radius: 50px;
+    font-size: 0.8rem; transition: all 0.3s ease;
+}
+.pref-tag:hover { background: rgba(102,126,234,0.3) !important; transform: translateY(-2px); }
+.pref-tag i     { color: rgba(255,255,255,0.7); font-size: 0.7rem; }
+
+/* ════════════════════════════════════════════════════════════════
+   BARRA DE ESTADO
+════════════════════════════════════════════════════════════════ */
+.barra-estado-rec {
+    background: rgba(255,255,255,0.04);
+    border-top: 1px solid rgba(255,255,255,0.06);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    padding: 10px 28px;
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 10px; width: 100%;
+}
+
+.barra-estado-rec-txt { color: rgba(255,255,255,0.55); font-size: 0.82rem; }
+.barra-estado-rec-txt span { color: #fff; font-weight: 700; }
+
+/* ════════════════════════════════════════════════════════════════
+   DASHBOARD
+════════════════════════════════════════════════════════════════ */
+.dashboard {
+    max-width: 2350px; margin: 0 auto; width: 100%;
+    padding: 28px 20px 60px; background: transparent !important;
+}
+.dashboard--perfil { padding-bottom: 0; }
+
+/* ════════════════════════════════════════════════════════════════
+   TÍTULO DE SECCIÓN
+════════════════════════════════════════════════════════════════ */
+.recomendaciones-title {
+    display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap;
+    font-size: 1.45rem; font-weight: 800; color: #fff !important;
+    margin-bottom: 24px; padding-bottom: 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+.recomendaciones-title i     { color: #f59e0b; font-size: 1.2rem; }
+.recomendaciones-title small { font-size: 0.78rem; font-weight: 500; color: rgba(255,255,255,0.4); }
+.recomendaciones-subtitle    { color: rgba(255,255,255,0.6); font-size: 0.9rem; font-weight: 300; }
+
+/* ════════════════════════════════════════════════════════════════
+   GRID
+════════════════════════════════════════════════════════════════ */
+.recomendaciones-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 24px;
+}
+@media (min-width: 1600px) { .recomendaciones-grid { grid-template-columns: repeat(4, 1fr); } }
+@media (min-width: 2350px) { .recomendaciones-grid { grid-template-columns: repeat(6, 1fr); } }
+@media (min-width: 2560px) { .recomendaciones-grid { grid-template-columns: repeat(6, 1fr); } }
+
+/* ════════════════════════════════════════════════════════════════
+   COMPONENTES LEGACY
+════════════════════════════════════════════════════════════════ */
+.coincidencia-tag {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 4px 10px; border-radius: 50px;
+    background: rgba(102,126,234,0.2); border: 1px solid rgba(102,126,234,0.35);
+    color: rgba(255,255,255,0.85); font-size: 0.72rem; font-weight: 600;
+}
+
+.score-badge {
+    background: rgba(255,255,255,0.2); padding: 6px 14px;
+    border-radius: 30px; font-size: 14px; font-weight: 600;
+    backdrop-filter: blur(5px); display: flex; align-items: center; gap: 5px;
+}
+.score-badge i { color: #ffd700; }
+
+.match-reason {
+    background: rgba(102,126,234,0.12);
+    border-left: 4px solid #667eea; padding: 12px 15px;
+    border-radius: 8px; margin-top: 15px;
+    font-size: 13px; color: rgba(255,255,255,0.75); line-height: 1.5;
+}
+.match-reason i      { margin-right: 8px; color: #2ecc71; }
+.match-reason strong { color: #fff; }
+
+.param-tag {
+    background: rgba(102,126,234,0.15); color: #a5b4fc;
+    padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 500;
+    display: inline-flex; align-items: center; gap: 5px;
+}
+
+.feedback-btn {
+    width: 36px; height: 36px; border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.5);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: all 0.2s ease;
+}
+.feedback-btn.like:hover    { background: #16a34a; color: white; border-color: #16a34a; }
+.feedback-btn.dislike:hover { background: #dc2626; color: white; border-color: #dc2626; }
+
+/* ════════════════════════════════════════════════════════════════
+   PAGINACIÓN
+════════════════════════════════════════════════════════════════ */
+.paginacion-wrap {
+    display: flex; justify-content: center; align-items: center;
+    gap: 6px; padding: 40px 0 20px; flex-wrap: wrap;
+}
+.pag-btn {
+    width: 40px; height: 40px; border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.7);
+    font-size: 0.88rem; font-weight: 600; cursor: pointer;
+    transition: all 0.2s ease; display: flex; align-items: center; justify-content: center;
+}
+.pag-btn:hover:not(:disabled) { background: rgba(102,126,234,0.25); border-color: rgba(102,126,234,0.5); color: #fff; }
+.pag-btn.active { background: #667eea; border-color: #667eea; color: #fff; box-shadow: 0 4px 14px rgba(102,126,234,0.45); }
+.pag-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+.pag-btn-wide { width: 40px; font-size: 0.78rem; }
+.pag-info { color: rgba(255,255,255,0.35); font-size: 0.88rem; padding: 0 4px; user-select: none; }
+
+/* ════════════════════════════════════════════════════════════════
+   DARK MODE
+════════════════════════════════════════════════════════════════ */
+body.dark-mode { background: #0d0d1a !important; --bg-base: #0d0d1a; }
+body.dark-mode main { background: #0d0d1a !important; }
+
+body.dark-mode .recomendaciones-hero {
+    background: linear-gradient(135deg, #0d0d1a 0%, #0f1629 50%, #091830 100%);
+}
+body.dark-mode .profile-card {
+    background: linear-gradient(135deg, rgba(99,102,241,0.15) 0%, rgba(8,12,28,0.95) 100%) !important;
+    border-color: rgba(99,102,241,0.3); box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+}
+body.dark-mode .profile-avatar { background: linear-gradient(135deg, #4f46e5, #6d28d9); box-shadow: 0 4px 14px rgba(79,70,229,0.5); }
+body.dark-mode .profile-avatar::after { border-color: #0d0d1a; }
+body.dark-mode .profile-info h2  { color: #f1f5f9 !important; }
+body.dark-mode .profile-info p   { color: rgba(255,255,255,0.4) !important; }
+body.dark-mode .profile-info p i { color: #818cf8; }
+body.dark-mode .pref-tag { background: rgba(99,102,241,0.3) !important; border-color: rgba(99,102,241,0.4); color: rgba(255,255,255,0.9) !important; }
+body.dark-mode .pref-tag i { color: #818cf8; }
+body.dark-mode .recomendaciones-title       { color: #f1f5f9 !important; border-bottom-color: rgba(255,255,255,0.05); }
+body.dark-mode .recomendaciones-title i     { color: #fbbf24; }
+body.dark-mode .recomendaciones-title small { color: rgba(255,255,255,0.3); }
+body.dark-mode .barra-estado-rec { background: rgba(255,255,255,0.02); border-color: rgba(255,255,255,0.04); }
+body.dark-mode .coincidencia-tag { background: rgba(99,102,241,0.15); border-color: rgba(99,102,241,0.25); color: rgba(255,255,255,0.7); }
+body.dark-mode .match-reason { background: rgba(99,102,241,0.1); border-left-color: #818cf8; color: rgba(255,255,255,0.7); }
+body.dark-mode .match-reason strong { color: #f1f5f9; }
+body.dark-mode .pag-btn { border-color: rgba(255,255,255,0.08); background: rgba(255,255,255,0.04); }
+body.dark-mode .pag-btn:hover:not(:disabled) { background: rgba(99,102,241,0.2); border-color: rgba(99,102,241,0.45); }
+body.dark-mode .pag-btn.active { background: #4f46e5; border-color: #4f46e5; box-shadow: 0 4px 14px rgba(79,70,229,0.45); }
+
+/* ════════════════════════════════════════════════════════════════
+   RESPONSIVE
+════════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+    main, main.min-main { margin-left: 0; }
+    .recomendaciones-hero    { padding: 32px 20px 24px; }
+    .recomendaciones-hero h1 { font-size: 1.6rem; }
+    .barra-estado-rec        { padding: 12px 20px; }
+    .dashboard               { padding: 18px 14px 40px; width: 100%; }
+    .profile-card            { padding: 18px; }
+    .profile-header          { flex-direction: column; align-items: flex-start; }
+    .recomendaciones-grid    { grid-template-columns: 1fr; gap: 16px; }
+}
+@media (max-width: 480px) {
+    .profile-card         { padding: 16px; }
+    .profile-avatar       { width: 52px; height: 52px; font-size: 1.1rem; }
+    .profile-info h2      { font-size: 1.1rem; }
+    .recomendaciones-title { font-size: 1.2rem; }
+}

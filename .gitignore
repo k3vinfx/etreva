@@ -1,0 +1,25 @@
+# Dependencias (se instalan con composer install / npm install)
+/vendor/
+/node_modules/
+
+# Secretos: copiar config/mail.example.php a config/mail.php y completar
+/config/mail.php
+
+# Datos de usuarios, fotos subidas y reportes generados
+/uploads/
+/assets/reportes/*.pdf
+/reporte_tratamiento_*.pdf
+
+# Respaldos y volcados con datos reales
+/sql_backups/
+/u838621046_vet_01*.sql
+*.bak*
+
+# Credenciales de las cuentas de prueba
+/herramientas/credenciales_prueba.csv
+/herramientas/usuarios_demo_defensa.md
+
+*.log
+.DS_Store
+Thumbs.db
+/sql_script.txt

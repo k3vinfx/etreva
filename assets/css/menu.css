@@ -1,0 +1,382 @@
+/* ============================================
+   MENÚ LATERAL - ESTILOS PRINCIPALES
+   ============================================ */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+:root {
+    --color-sidebar: #2c3e50;
+    --color-sidebar-hover: #3498db;
+    --color-text: #ecf0f1;
+    --color-text-secondary: #bdc3c7;
+    --color-bg-main: #f5f7fb;
+    --transition-speed: 0.3s;
+}
+
+/* ===== BARRA LATERAL ===== */
+.barra-lateral {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 280px;
+    height: 100vh;
+    background: linear-gradient(180deg, #2c3e50 0%, #1a2634 100%);
+    color: var(--color-text);
+    padding: 20px 0;
+    transition: width var(--transition-speed) ease;
+    z-index: 1000;
+    overflow-y: auto;
+    overflow-x: hidden;
+    box-shadow: 4px 0 15px rgba(0,0,0,0.1);
+}
+
+/* ===== MINI BARRA LATERAL (COLLAPSED) ===== */
+.barra-lateral.mini-barra-lateral {
+    width: 80px;
+}
+
+.barra-lateral.mini-barra-lateral .nombre-pagina span,
+.barra-lateral.mini-barra-lateral .navegacion span,
+.barra-lateral.mini-barra-lateral .info-usuario .nombre-email,
+.barra-lateral.mini-barra-lateral .modo-oscuro .info span {
+    display: none;
+}
+
+.barra-lateral.mini-barra-lateral .usuario img {
+    width: 40px;
+    height: 40px;
+    margin: 0 auto;
+}
+
+.barra-lateral.mini-barra-lateral .info-usuario {
+    justify-content: center;
+}
+
+.barra-lateral.mini-barra-lateral .modo-oscuro {
+    padding: 10px;
+}
+
+/* ===== NOMBRE PÁGINA / LOGO ===== */
+.nombre-pagina {
+    display: flex;
+    align-items: center;
+    padding: 0 25px 25px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    margin-bottom: 20px;
+    cursor: pointer;
+}
+
+.nombre-pagina ion-icon {
+    font-size: 32px;
+    color: #3498db;
+    margin-right: 10px;
+}
+
+.nombre-pagina span {
+    font-size: 22px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+/* ===== NAVEGACIÓN ===== */
+.navegacion ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.navegacion li {
+    margin-bottom: 5px;
+}
+
+.navegacion a {
+    display: flex;
+    align-items: center;
+    padding: 12px 25px;
+    color: rgba(255,255,255,0.8);
+    text-decoration: none;
+    transition: all var(--transition-speed);
+    font-size: 15px;
+    border-left: 3px solid transparent;
+    white-space: nowrap;
+}
+
+.navegacion a:hover {
+    background: rgba(52, 152, 219, 0.2);
+    color: white;
+    border-left-color: #3498db;
+}
+
+.navegacion a.active {
+    background: rgba(52, 152, 219, 0.3);
+    color: white;
+    border-left-color: #3498db;
+}
+
+.navegacion ion-icon {
+    font-size: 20px;
+    min-width: 30px;
+    margin-right: 10px;
+}
+
+/* ===== BOTÓN CERRAR SESIÓN ===== */
+.logout-btn {
+    margin-top: 20px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    padding-top: 15px !important;
+    color: #e74c3c !important;
+}
+
+.logout-btn:hover {
+    background: rgba(231, 76, 60, 0.1) !important;
+    border-left-color: #e74c3c !important;
+}
+
+/* ===== LÍNEA SEPARADORA ===== */
+.linea {
+    height: 1px;
+    background: rgba(255,255,255,0.1);
+    margin: 20px 25px;
+}
+
+/* ===== MODO OSCURO TOGGLE ===== */
+.modo-oscuro {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 25px;
+    margin-bottom: 20px;
+}
+
+.modo-oscuro .info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--color-text-secondary);
+}
+
+.modo-oscuro .info ion-icon {
+    font-size: 20px;
+}
+
+.switch {
+    width: 50px;
+    height: 25px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 30px;
+    position: relative;
+    cursor: pointer;
+}
+
+.base {
+    width: 100%;
+    height: 100%;
+    background: #34495e;
+    border-radius: 30px;
+    position: relative;
+}
+
+.circulo {
+    width: 21px;
+    height: 21px;
+    background: #ecf0f1;
+    border-radius: 50%;
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    transition: transform var(--transition-speed);
+}
+
+.circulo.prendido {
+    transform: translateX(25px);
+    background: #f1c40f;
+}
+
+/* ===== USUARIO ===== */
+.usuario {
+    display: flex;
+    align-items: center;
+    padding: 15px 25px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    margin-top: 10px;
+}
+
+.usuario img {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 10px;
+    border: 2px solid #3498db;
+}
+
+.info-usuario {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex: 1;
+}
+
+.nombre-email {
+    display: flex;
+    flex-direction: column;
+}
+
+.nombre {
+    font-weight: 600;
+    color: white;
+    font-size: 14px;
+}
+
+.email {
+    font-size: 12px;
+    color: var(--color-text-secondary);
+}
+
+/* ===== MENÚ HAMBURGUESA (MOBILE) ===== */
+.menu {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    width: 50px;
+    height: 50px;
+    background: #3498db;
+    border-radius: 50%;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 1001;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.menu ion-icon {
+    font-size: 30px;
+    color: white;
+}
+
+.menu ion-icon:last-child {
+    display: none;
+}
+
+/* ===== MAIN CONTENT (AJUSTE) ===== */
+main {
+    margin-left: 280px;
+    transition: margin-left var(--transition-speed);
+    min-height: 100vh;
+    background: #f5f7fb;
+}
+
+main.min-main {
+    margin-left: 80px;
+}
+
+/* ===== DARK MODE ===== */
+body.dark-mode {
+    background: #1a1a1a;
+}
+
+body.dark-mode main {
+    background: #1a1a1a;
+}
+
+body.dark-mode .barra-lateral {
+    background: linear-gradient(180deg, #1e2a36 0%, #121a22 100%);
+}
+
+body.dark-mode .nombre-pagina span {
+    color: #ecf0f1;
+}
+
+body.dark-mode .navegacion a {
+    color: #b0b0b0;
+}
+
+body.dark-mode .navegacion a:hover {
+    background: rgba(52, 152, 219, 0.15);
+    color: white;
+}
+
+body.dark-mode .base {
+    background: #2c3e50;
+}
+
+body.dark-mode .circulo {
+    background: #ecf0f1;
+}
+
+body.dark-mode .circulo.prendido {
+    background: #f39c12;
+}
+
+body.dark-mode .usuario img {
+    border-color: #f39c12;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+    .barra-lateral {
+        transform: translateX(-100%);
+    }
+    
+    .barra-lateral.max-barra-lateral {
+        transform: translateX(0);
+        width: 280px;
+    }
+    
+    .barra-lateral.max-barra-lateral .nombre-pagina span,
+    .barra-lateral.max-barra-lateral .navegacion span,
+    .barra-lateral.max-barra-lateral .info-usuario .nombre-email {
+        display: block;
+    }
+    
+    .menu {
+        display: flex;
+    }
+    
+    main {
+        margin-left: 0;
+        padding-top: 80px;
+    }
+    
+    main.min-main {
+        margin-left: 0;
+    }
+}
+
+@media (max-width: 480px) {
+    .barra-lateral {
+        width: 100%;
+    }
+    
+    .barra-lateral.max-barra-lateral {
+        width: 100%;
+    }
+    
+    .usuario {
+        padding: 15px;
+    }
+}
+
+/* ===== SCROLLBAR PERSONALIZADO ===== */
+.barra-lateral::-webkit-scrollbar {
+    width: 6px;
+}
+
+.barra-lateral::-webkit-scrollbar-track {
+    background: rgba(255,255,255,0.05);
+}
+
+.barra-lateral::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.2);
+    border-radius: 3px;
+}
+
+.barra-lateral::-webkit-scrollbar-thumb:hover {
+    background: rgba(255,255,255,0.3);
+}

@@ -1,0 +1,4 @@
+# Volcados y scripts de base de datos: nunca accesibles desde la web
+<FilesMatch "\.(sql|sql\.gz|bak)$">
+    Require all denied
+</FilesMatch>
