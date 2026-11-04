@@ -17,7 +17,7 @@ A las iteraciones de XP se les llama "sprints" solo como sinónimo. La justifica
 |---|---|
 | Backlog (52 requerimientos, 190 puntos) | [Issues](../../issues?q=is%3Aissue) · [docs/backlog.csv](docs/backlog.csv) |
 | Iteraciones | [Milestones](../../milestones?state=closed) Sprint 1 … 6 |
-| Tablero Kanban | [Tablero Kanban Etreva](https://github.com/users/k3vinfx/projects/5): vista general y una vista por sprint |
+| Tablero Kanban | [Tablero Kanban Etreva](https://github.com/users/k3vinfx/projects/6): vista general y una vista por sprint |
 | Burndown | [docs/burndown](docs/burndown) |
 
 ### Puntos de historia por iteración

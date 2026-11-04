@@ -93,7 +93,7 @@ Las sumas de puntos salen directamente del backlog (Tabla 3.64), con Baja = 1, M
 |---|---|
 | Backlog (historias / requerimientos) | **Issues**: una por requerimiento, con etiquetas de tipo, prioridad, complejidad y puntos |
 | Iteraciones (sprints) | **Milestones**: Sprint 1 … Sprint 6, con fecha de cierre |
-| Tablero Kanban por fase | [**Tablero Kanban Etreva**](https://github.com/users/k3vinfx/projects/5) (vistas Sprint 1 … 6): columnas Por hacer / En progreso / En pruebas / Terminado, campos *Puntos* y *Sprint* |
+| Tablero Kanban por fase | [**Tablero Kanban Etreva**](https://github.com/users/k3vinfx/projects/6) (vistas Sprint 1 … 6): columnas Por hacer / En progreso / En pruebas / Terminado, campos *Puntos* y *Sprint* |
 | Integración continua | **Commits**: uno por fase, que cierran las issues de esa fase |
 | Burndown | `docs/burndown/` (gráficos SVG y CSV) |
 
