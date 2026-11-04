@@ -317,6 +317,82 @@ $frases = [
         }
         @media (max-width: 1100px) { .dos-col { grid-template-columns: 1fr; } }
 
+        /* Columnas de igual alto: cada columna estira su tarjeta para no dejar huecos */
+        .dos-col > div { display: flex; flex-direction: column; min-width: 0; }
+        .dos-col > div > .rec-dia-card,
+        .dos-col > div > .progreso-card,
+        .dos-col > div > .panel-lista { flex: 1; }
+
+        /* Panel con lista desplazable (Este mes / Mis itinerarios) */
+        .panel-lista {
+            background: var(--bg-card-solid);
+            border: 1px solid var(--border-light);
+            border-radius: 20px;
+            box-shadow: var(--card-shadow);
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+        .panel-scroll {
+            flex: 1;
+            max-height: 318px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 2px 6px 2px 2px;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(148,163,184,0.45) transparent;
+        }
+        .panel-scroll::-webkit-scrollbar { width: 6px; }
+        .panel-scroll::-webkit-scrollbar-thumb { background: rgba(148,163,184,0.45); border-radius: 6px; }
+        .panel-lista .festividad-item,
+        .panel-lista .itinerario-item { background: transparent; flex-shrink: 0; }
+        html.tema-claro .festividad-badge { color: #be185d; }
+        .panel-lista .festividad-info h5,
+        .panel-lista .festividad-info p { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .panel-pie {
+            margin-top: 10px;
+            padding: 10px 6px 2px;
+            border-top: 1px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            flex-wrap: wrap;
+            font-size: 0.78rem;
+            color: var(--text-muted);
+        }
+        .panel-pie a { color: var(--accent); font-weight: 700; text-decoration: none; white-space: nowrap; }
+        .panel-pie a:hover { text-decoration: underline; }
+        .panel-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+        .panel-vacio {
+            flex: 1;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            gap: 10px; padding: 24px; text-align: center;
+            color: var(--text-muted); font-size: 0.85rem;
+        }
+        .panel-vacio i { font-size: 2rem; opacity: 0.3; }
+
+        /* Estado de cada itinerario */
+        .est-chip {
+            display: inline-flex; align-items: center; gap: 5px;
+            font-size: 0.68rem; font-weight: 700;
+            padding: 3px 9px; border-radius: 50px; white-space: nowrap;
+        }
+        .est-visitado  { background: rgba(22,163,74,0.14);  color: #16a34a; }
+        .est-pendiente { background: rgba(217,119,6,0.14);  color: #d97706; }
+        .est-favorito  { background: rgba(225,29,72,0.12);  color: #e11d48; }
+        .itin-thumb {
+            width: 46px; height: 46px; border-radius: 12px; flex-shrink: 0;
+            background: linear-gradient(135deg, var(--accent), var(--accent2)) center/cover no-repeat;
+        }
+        .itinerario-item .itin-info { min-width: 0; flex: 1; }
+        .itinerario-item .itin-info h5,
+        .itinerario-item .itin-info p { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .itinerario-item .itin-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; flex-shrink: 0; }
+
         /* ══════════════════════════════════════════
            RECOMENDACIÓN DEL DÍA
         ══════════════════════════════════════════ */
@@ -415,6 +491,40 @@ $frases = [
             width: fit-content;
         }
         .rec-dia-btn:hover { background: #4f46e5; transform: translateY(-2px); }
+
+        /* Carrusel de recomendaciones del día */
+        .rec-dia-pie {
+            margin-top: auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .rec-dia-pie .rec-dia-btn { margin-top: 0; }
+        .rec-dia-nav { display: flex; align-items: center; gap: 10px; }
+        .rec-dia-flecha {
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            border: 1px solid rgba(255,255,255,0.35);
+            background: rgba(15,23,42,0.45);
+            color: #fff;
+            display: inline-flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.2s;
+        }
+        .rec-dia-flecha:hover { background: var(--accent); transform: scale(1.06); }
+        .rec-dia-puntos { display: flex; gap: 6px; }
+        .rec-dia-punto {
+            width: 8px; height: 8px; border-radius: 50%;
+            border: none; padding: 0; cursor: pointer;
+            background: rgba(148,163,184,0.55);
+            transition: width 0.25s, background 0.25s;
+        }
+        .rec-dia-punto.activo { width: 22px; border-radius: 6px; background: var(--accent); }
+        .rec-dia-contador { font-size: 0.75rem; color: #94a3b8; min-width: 34px; text-align: center; }
+        .rec-dia-anim { animation: recDiaEntra 0.35s ease; }
+        @keyframes recDiaEntra { from { opacity: 0; transform: translateX(14px); } to { opacity: 1; transform: none; } }
 
         /* ══════════════════════════════════════════
            SKELETON — siempre oscuro
@@ -808,10 +918,13 @@ $frases = [
 
             <div>
                 <div class="sec-title"><i class="fas fa-calendar-star" style="color:#e879ab;"></i> <?= Lang::get('inicio.este_mes_titulo') ?> <span class="muted" id="mesNombre"></span></div>
-                <div class="este-mes-wrap" id="esteMesWrap">
-                    <div class="festividad-item skeleton" style="height:64px;"></div>
-                    <div class="festividad-item skeleton" style="height:64px;"></div>
-                    <div class="festividad-item skeleton" style="height:64px;"></div>
+                <div class="panel-lista">
+                    <div class="panel-scroll" id="esteMesWrap">
+                        <div class="festividad-item skeleton" style="height:64px;"></div>
+                        <div class="festividad-item skeleton" style="height:64px;"></div>
+                        <div class="festividad-item skeleton" style="height:64px;"></div>
+                    </div>
+                    <div class="panel-pie" id="esteMesPie" style="display:none;"></div>
                 </div>
             </div>
 
@@ -822,10 +935,13 @@ $frases = [
 
             <div>
                 <div class="sec-title"><i class="fas fa-route"></i> <?= Lang::get('inicio.itinerarios_titulo') ?></div>
-                <div class="itinerarios-grid" id="itinerariosGrid">
-                    <div class="itinerario-item skeleton" style="height:70px;"></div>
-                    <div class="itinerario-item skeleton" style="height:70px;"></div>
-                    <div class="itinerario-item skeleton" style="height:70px;"></div>
+                <div class="panel-lista">
+                    <div class="panel-scroll" id="itinerariosGrid">
+                        <div class="itinerario-item skeleton" style="height:70px;"></div>
+                        <div class="itinerario-item skeleton" style="height:70px;"></div>
+                        <div class="itinerario-item skeleton" style="height:70px;"></div>
+                    </div>
+                    <div class="panel-pie" id="itinerariosPie" style="display:none;"></div>
                 </div>
             </div>
 
@@ -835,7 +951,7 @@ $frases = [
                     <div class="progreso-header">
                         <div>
                             <p style="color:var(--text-muted);font-size:0.82rem;margin:0 0 4px;"><?= Lang::get('inicio.progreso_atracciones') ?></p>
-                            <div class="progreso-nums"><strong id="progresoVistas">0</strong> <?= Lang::get('inicio.progreso_de') ?> <strong id="progresoTotal">570</strong></div>
+                            <div class="progreso-nums"><strong id="progresoVistas">0</strong> <?= Lang::get('inicio.progreso_de') ?> <strong id="progresoTotal">—</strong></div>
                         </div>
                         <div style="font-size:1.5rem;font-weight:800;color:var(--accent);" id="progresoPct">0%</div>
                     </div>
@@ -881,6 +997,8 @@ const HOY = new Date();
 const FRASES = <?= json_encode($frases, JSON_UNESCAPED_UNICODE) ?>;
 // Textos de la vista generados por JS (antes estaban fijos en español)
 const TI = <?= json_encode(['ver_detalles' => Lang::get('inicio.ver_detalles'), 'match_contigo' => Lang::get('inicio.match_contigo'), 'sin_itinerarios' => Lang::get('inicio.sin_itinerarios'), 'error_cargar' => Lang::get('inicio.error_cargar'), 'sin_festividades' => Lang::get('inicio.sin_festividades'), 'festividad' => Lang::get('inicio.festividad'), 'evento_cultural' => Lang::get('inicio.evento_cultural'), 'itinerario_n' => Lang::get('inicio.itinerario_n'), 'destinos' => Lang::get('inicio.destinos'), 'cat_festividades' => Lang::get('inicio.cat_festividades'), 'ins_explorador' => Lang::get('inicio.ins_explorador'), 'ins_aventurero' => Lang::get('inicio.ins_aventurero'), 'ins_nochero' => Lang::get('inicio.ins_nochero'), 'ins_gourmet' => Lang::get('inicio.ins_gourmet'), 'ins_culturista' => Lang::get('inicio.ins_culturista'), 'ins_estrella' => Lang::get('inicio.ins_estrella'),
+    'req_explorador' => Lang::get('inicio.req_explorador'), 'req_aventurero' => Lang::get('inicio.req_aventurero'), 'req_nochero' => Lang::get('inicio.req_nochero'), 'req_gourmet' => Lang::get('inicio.req_gourmet'), 'req_culturista' => Lang::get('inicio.req_culturista'), 'req_estrella' => Lang::get('inicio.req_estrella'),
+    'ver_todos' => Lang::get('inicio.ver_todos'), 'eventos_mes' => Lang::get('inicio.eventos_mes'), 'est_visitado' => Lang::get('inicio.est_visitado'), 'est_pendiente' => Lang::get('inicio.est_pendiente'), 'est_favorito' => Lang::get('inicio.est_favorito'), 'sin_fecha' => Lang::get('inicio.sin_fecha'), 'ver_recomendaciones' => Lang::get('inicio.ver_recomendaciones'),
     'cat' => ['trekking' => Lang::get('categorias.trekking'), 'montanismo' => Lang::get('categorias.montanismo'),
               'downhill' => Lang::get('categorias.downhill'), 'cultura' => Lang::get('categorias.cultura'),
               'vida_nocturna' => Lang::get('categorias.vida_nocturna'), 'gastronomia' => Lang::get('categorias.gastronomia'),
@@ -942,6 +1060,7 @@ function cargarClima() {
 function cargarRecDia() {
     $.ajax({ url:'index.php?c=recomendaciones&a=ObtenerModeloMR', type:'GET', dataType:'json',
         success: function(resp) {
+            RECS_IDS.resolve(resp && resp.success ? (resp.recomendaciones || []).map(r => Number(r.output)) : []);
             if (!resp.success || !resp.recomendaciones?.length) {
                 $('#recDiaCard').html('<div style="padding:24px;color:var(--text-muted);text-align:center;">No hay recomendaciones</div>');
                 $('#kpiMatch').text('0'); return;
@@ -967,33 +1086,98 @@ function cargarRecDia() {
                 $('#kpiMatch').text('0'); return;
             }
 
-            const recs = filtradas.sort((a,b) => (b.porcentaje_match ?? 0) - (a.porcentaje_match ?? 0));
-            $('#kpiMatch').text(recs.length);
-
-            const rec = recs[0];
-            let img = '';
-            try { const ub = typeof rec.ubicacion === 'string' ? JSON.parse(rec.ubicacion) : rec.ubicacion; if (ub?.rutas?.[0]) img = ub.rutas[0]; } catch(e) {}
-            let vv = rec.porcentaje_match ?? 0;
-            vv = Math.min(98, Math.round(vv >= 80 ? 90 + ((vv-80)/20)*8 : vv >= 60 ? 78 + ((vv-60)/20)*12 : 65));
-            const bc   = vv >= 85 ? '#16a34a' : '#d97706';
-            const punt = parseFloat(rec.puntuacion || 4.5).toFixed(1);
-
-            $('#recDiaCard').html(`
-                <div class="rec-dia-img" style="${img ? `background-image:url('${img}');background-size:cover;background-position:center;` : `background:linear-gradient(135deg,#6366f144,#6366f122);`}"></div>
-                <div class="rec-dia-content">
-                    <div class="rec-dia-badge" style="background:${bc};"><i class="fas fa-fire"></i> ${TI.match_contigo.replace('{n}', vv)}</div>
-                    <div class="rec-dia-nombre">${rec.nombre || 'Atracción'}</div>
-                    <div class="rec-dia-desc">${rec.descripcion || 'Un lugar increíble en La Paz, Bolivia.'}</div>
-                    <div class="rec-dia-meta">
-                        <span><i class="fas fa-map-marker-alt"></i> ${rec.ciudad || 'La Paz'}, Bolivia</span>
-                        <span><i class="fas fa-star" style="color:#f59e0b;"></i> ${punt}/5</span>
-                        <span><i class="fas fa-tag"></i> ${rec.categoria || 'Lugar'}</span>
-                    </div>
-                    <button class="rec-dia-btn" onclick="verDetalle(${rec.output})">${TI.ver_detalles} <i class="fas fa-arrow-right"></i></button>
-                </div>`);
+            $('#kpiMatch').text(filtradas.length);
+            obtenerVisitadas().then(ids => {
+                REC_DIA.lista = seleccionDelDia(filtradas, ids);
+                REC_DIA.i = 0;
+                mostrarRecDia(0);
+            });
         },
-        error: () => { $('#recDiaCard').html('<div style="padding:24px;color:var(--text-muted);text-align:center;">' + TI.error_cargar + '</div>'); }
+        error: () => { RECS_IDS.resolve([]); $('#recDiaCard').html('<div style="padding:24px;color:var(--text-muted);text-align:center;">' + TI.error_cargar + '</div>'); }
     });
+}
+
+// ── SELECCIÓN DIARIA DE RECOMENDACIONES ─────────────────────────────────────
+// Criterio: de las (hasta) 25 recomendaciones de la IA, cada día se muestran 5:
+//   1. Se descartan las que el turista ya visitó (si ya visitó todas, se usan todas).
+//   2. Se respeta el orden del motor (por match y con categorías intercaladas) y se toma
+//      una ventana de 5 que avanza un bloque por día: en 5 días el turista ve las 25.
+//   3. Dentro del día se ordenan por match: la primera es la más afín.
+// Es determinista por fecha: todo el día ve lo mismo y al día siguiente cambia.
+const REC_POR_DIA = 5;
+const REC_DIA = { lista: [], i: 0 };
+
+function seleccionDelDia(recs, idsVisitados) {
+    const vistos = new Set(idsVisitados.map(Number));
+    let pool = recs.filter(r => !vistos.has(Number(r.output)));
+    if (!pool.length) pool = recs.slice();
+    if (pool.length <= REC_POR_DIA) return pool.sort((a, b) => (b.porcentaje_match ?? 0) - (a.porcentaje_match ?? 0));
+
+    const hoy = new Date();
+    const dia = Math.floor(Date.UTC(hoy.getFullYear(), hoy.getMonth(), hoy.getDate()) / 86400000);
+    const bloques = Math.ceil(pool.length / REC_POR_DIA);
+    const inicio = (dia % bloques) * REC_POR_DIA;
+    const elegidas = [];
+    for (let k = 0; k < REC_POR_DIA; k++) elegidas.push(pool[(inicio + k) % pool.length]);
+    return elegidas.sort((a, b) => (b.porcentaje_match ?? 0) - (a.porcentaje_match ?? 0));
+}
+
+function mostrarRecDia(i) {
+    const lista = REC_DIA.lista, n = lista.length;
+    if (!n) return;
+    REC_DIA.i = (i + n) % n;
+    const rec = lista[REC_DIA.i];
+    let img = '';
+    try { const ub = typeof rec.ubicacion === 'string' ? JSON.parse(rec.ubicacion) : rec.ubicacion; if (ub?.rutas?.[0]) img = ub.rutas[0]; } catch(e) {}
+    let vv = rec.porcentaje_match ?? 0;
+    vv = Math.min(98, Math.round(vv >= 80 ? 90 + ((vv-80)/20)*8 : vv >= 60 ? 78 + ((vv-60)/20)*12 : 65));
+    const bc   = vv >= 85 ? '#16a34a' : '#d97706';
+    const punt = parseFloat(rec.puntuacion || 4.5).toFixed(1);
+    const nav = n > 1 ? `
+        <div class="rec-dia-nav">
+            <button class="rec-dia-flecha" onclick="mostrarRecDia(REC_DIA.i - 1)" aria-label="‹"><i class="fas fa-chevron-left"></i></button>
+            <div class="rec-dia-puntos">${lista.map((_, k) => `<button class="rec-dia-punto ${k === REC_DIA.i ? 'activo' : ''}" onclick="mostrarRecDia(${k})" aria-label="${k + 1}"></button>`).join('')}</div>
+            <span class="rec-dia-contador">${REC_DIA.i + 1} / ${n}</span>
+            <button class="rec-dia-flecha" onclick="mostrarRecDia(REC_DIA.i + 1)" aria-label="›"><i class="fas fa-chevron-right"></i></button>
+        </div>` : '';
+
+    $('#recDiaCard').html(`
+        <div class="rec-dia-img" style="${img ? `background-image:url('${img}');background-size:cover;background-position:center;` : `background:linear-gradient(135deg,#6366f144,#6366f122);`}"></div>
+        <div class="rec-dia-content rec-dia-anim">
+            <div class="rec-dia-badge" style="background:${bc};"><i class="fas fa-fire"></i> ${TI.match_contigo.replace('{n}', vv)}</div>
+            <div class="rec-dia-nombre">${rec.nombre || 'Atracción'}</div>
+            <div class="rec-dia-desc">${rec.descripcion || 'Un lugar increíble en La Paz, Bolivia.'}</div>
+            <div class="rec-dia-meta">
+                <span><i class="fas fa-map-marker-alt"></i> ${rec.ciudad || 'La Paz'}, Bolivia</span>
+                <span><i class="fas fa-star" style="color:#f59e0b;"></i> ${punt}/5</span>
+                <span><i class="fas fa-tag"></i> ${rec.categoria || 'Lugar'}</span>
+            </div>
+            <div class="rec-dia-pie">
+                <button class="rec-dia-btn" onclick="verDetalle(${rec.output})">${TI.ver_detalles} <i class="fas fa-arrow-right"></i></button>
+                ${nav}
+            </div>
+        </div>`);
+}
+
+// Deslizar con el dedo en el celular
+(function () {
+    let x0 = null;
+    $(document).on('touchstart', '#recDiaCard', e => { x0 = e.originalEvent.touches[0].clientX; });
+    $(document).on('touchend', '#recDiaCard', e => {
+        if (x0 === null) return;
+        const dx = e.originalEvent.changedTouches[0].clientX - x0; x0 = null;
+        if (Math.abs(dx) > 40) mostrarRecDia(REC_DIA.i + (dx < 0 ? 1 : -1));
+    });
+})();
+
+// Atracciones visitadas del usuario (una sola petición, compartida por el carrusel y el progreso)
+let _visitadas = null;
+function obtenerVisitadas() {
+    if (!_visitadas) {
+        _visitadas = $.ajax({ url:'index.php?c=historial&a=Visitadas', type:'GET', dataType:'json' })
+            .then(resp => resp && resp.success ? resp.ids : [], () => $.Deferred().resolve([]));
+    }
+    return _visitadas;
 }
 
 // ── FESTIVIDADES + CATEGORÍAS + PROGRESO ──────────────────────────────────────
@@ -1003,11 +1187,19 @@ function cargarFestividades() {
             if (!resp.success || !resp.atracciones?.length) return;
             const todas = resp.atracciones;
             $('#kpiTotal').text(todas.length);
-            const festiv = todas.filter(a => (a.meses_evento || []).includes(MES_ACTUAL)).slice(0, 5);
+            // Todas las festividades del mes (el panel tiene scroll si son muchas)
+            const festiv = todas.filter(a => (a.meses_evento || []).includes(MES_ACTUAL));
             $('#kpiFestividades').text(festiv.length);
             if (!festiv.length) {
-                $('#esteMesWrap').html('<div style="color:var(--text-muted);font-size:0.85rem;padding:20px;text-align:center;">' + TI.sin_festividades + '</div>');
+                $('#esteMesWrap').html('<div class="panel-vacio"><i class="fas fa-calendar"></i>' + TI.sin_festividades + '</div>');
+                $('#esteMesPie').hide();
             } else {
+              $('#esteMesPie').html(`<span><i class="fas fa-calendar-check" style="color:#e879ab;"></i> ${TI.eventos_mes.replace('{n}', festiv.length)}</span>
+                  <a href="index.php?c=buscar&a=index">${TI.ver_todos} <i class="fas fa-arrow-right"></i></a>`).show();
+              // Periodo del evento: "Sep – Nov" si dura varios meses, o el mes si es solo uno
+              const corto = m => (MESES_TRAD[m] || '').slice(0, 3);
+              const periodo = f => f.mes_inicio && f.mes_fin && f.mes_inicio !== f.mes_fin
+                  ? `${corto(f.mes_inicio)} – ${corto(f.mes_fin)}` : MESES_TRAD[MES_ACTUAL];
               $('#esteMesWrap').html(festiv.map(f => `
                 <div class="festividad-item" onclick="verDetalle(${f.id})" style="flex-wrap:wrap;gap:10px;cursor:pointer;">
                     <div class="festividad-dot" style="flex-shrink:0;"></div>
@@ -1016,7 +1208,7 @@ function cargarFestividades() {
                         <p>${f.descripcion ? f.descripcion.slice(0,60) + '...' : TI.evento_cultural}</p>
                     </div>
                     <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
-                        <span class="festividad-badge">${MESES_TRAD[MES_ACTUAL]}</span>
+                        <span class="festividad-badge">${periodo(f)}</span>
                         <button onclick="event.stopPropagation(); verDetalle(${f.id})" 
                             style="background:#6366f1;color:#fff;border:none;border-radius:8px;
                                 padding:5px 12px;font-size:0.75rem;font-weight:700;cursor:pointer;
@@ -1029,7 +1221,7 @@ function cargarFestividades() {
                 </div>`).join(''));
             }
             renderCategorias(todas);
-            renderProgreso(Math.floor(todas.length * 0.08), todas.length);
+            cargarProgreso(todas);
         }
     });
 }
@@ -1066,24 +1258,48 @@ function renderCategorias(todas) {
 }
 
 // ── PROGRESO ──────────────────────────────────────────────────────────────────
+// Las insignias dependen de QUÉ visitó el turista (categoría de cada atracción visitada),
+// no de un número arbitrario. "Visitada" = itinerario con estado 'visitado' (Historial de Viajes).
 const BADGES_DEF = [
-    {icono:'🗺️',label:TI.ins_explorador,color:'#667eea33',min:1},
-    {icono:'🏔️',label:TI.ins_aventurero,color:'#16a34a33',min:5},
-    {icono:'🌙',label:TI.ins_nochero,color:'#7c3aed33',min:10},
-    {icono:'🍽️',label:TI.ins_gourmet,color:'#ea580c33',min:15},
-    {icono:'🏛️',label:TI.ins_culturista,color:'#92400e33',min:20},
-    {icono:'⭐',label:TI.ins_estrella,color:'#f59e0b33',min:30},
+    {icono:'🗺️',label:TI.ins_explorador, color:'#667eea33', req:TI.req_explorador, ok: p => p.total >= 1},
+    {icono:'🏔️',label:TI.ins_aventurero, color:'#16a34a33', req:TI.req_aventurero, ok: p => p.cat('trekking') + p.cat('montanismo') + p.cat('downhill') >= 1},
+    {icono:'🌙',label:TI.ins_nochero,    color:'#7c3aed33', req:TI.req_nochero,    ok: p => p.cat('vida_nocturna') >= 1},
+    {icono:'🍽️',label:TI.ins_gourmet,    color:'#ea580c33', req:TI.req_gourmet,    ok: p => p.cat('gastronomia') >= 1},
+    {icono:'🏛️',label:TI.ins_culturista, color:'#92400e33', req:TI.req_culturista, ok: p => p.cat('cultura') + p.cat('festividades') >= 1},
 ];
+// Estrella: se gana al completar todas las anteriores
+BADGES_DEF.push({icono:'⭐', label:TI.ins_estrella, color:'#f59e0b33', req:TI.req_estrella, ok: p => BADGES_DEF.slice(0, 5).every(b => b.ok(p))});
 
-function renderProgreso(vistas, total) {
-    $('#progresoVistas').text(vistas); $('#progresoTotal').text(total);
-    const pct = total > 0 ? Math.round((vistas/total)*100) : 0;
+// IDs de las atracciones que la IA le recomendó al turista (máx. 25, ObtenerModeloMR).
+// Se resuelve desde cargarRecDia() para no pedir las recomendaciones dos veces.
+const RECS_IDS = $.Deferred();
+
+function cargarProgreso(todas) {
+    $.when(RECS_IDS, obtenerVisitadas()).then((recs, ids) => renderProgreso(recs, ids, todas));
+}
+
+// Progreso = recomendaciones de la IA que el turista efectivamente visitó (itinerario 'visitado').
+// Mide si fue a los lugares que le sugerimos. Las insignias premian todas sus visitas por tipo de lugar.
+function renderProgreso(idsRecomendados, idsVisitados, todas) {
+    const porId = new Map(todas.map(a => [Number(a.id), a]));
+    const setVisitados = new Set(idsVisitados.map(Number));
+    const recomendados = [...new Set(idsRecomendados.map(Number))];
+    const cumplidas = recomendados.filter(id => setVisitados.has(id)).length;
+
+    const visitadas = [...setVisitados].map(id => porId.get(id)).filter(Boolean);
+    const porCat = {};
+    visitadas.forEach(a => { const c = (a.categoria || 'otros').toLowerCase(); porCat[c] = (porCat[c] || 0) + 1; });
+    const p = { total: visitadas.length, cat: c => porCat[c] || 0 };
+
+    const total = recomendados.length;
+    const pct = total > 0 ? Math.round((cumplidas / total) * 100) : 0;
+    $('#progresoVistas').text(cumplidas); $('#progresoTotal').text(total);
     $('#progresoPct').text(pct + '%');
     setTimeout(() => { $('#progresoFill').css('width', pct + '%'); }, 400);
     $('#badgesWrap').html(BADGES_DEF.map(b => {
-        const ok = vistas >= b.min;
+        const ok = b.ok(p);
         return `<div class="badge-item">
-            <div class="badge-icon ${ok ? '' : 'bloqueado'}" style="background:${ok ? b.color : 'transparent'};" title="${ok ? b.label+' desbloqueado' : `Visitá ${b.min} atracciones`}">${b.icono}</div>
+            <div class="badge-icon ${ok ? '' : 'bloqueado'}" style="background:${ok ? b.color : 'transparent'};" title="${ok ? b.label + ' ✓' : b.req}">${b.icono}</div>
             <div class="badge-label" style="color:${ok ? 'var(--text-primary)' : 'var(--text-muted)'};">${b.label}</div>
         </div>`;
     }).join(''));
@@ -1091,24 +1307,48 @@ function renderProgreso(vistas, total) {
 
 // ── ITINERARIOS ───────────────────────────────────────────────────────────────
 function cargarItinerarios() {
+    const vacio = () => {
+        $('#itinerariosGrid').html('<div class="panel-vacio"><i class="fas fa-route"></i>' + TI.sin_itinerarios
+            + '<a href="index.php?c=recomendaciones&a=index" class="rec-dia-btn" style="font-size:0.78rem;padding:8px 14px;">' + TI.ver_recomendaciones + ' <i class="fas fa-arrow-right"></i></a></div>');
+        $('#itinerariosPie').hide();
+    };
     $.ajax({ url:'index.php?c=itinerarios&a=Index&formato=json', type:'GET', dataType:'json',
         success: function(resp) {
             const lista = resp.itinerarios || resp.data || [];
             $('#kpiItinerarios').text(lista.length);
-            if (!lista.length) {
-                $('#itinerariosGrid').html('<div style="padding:20px;color:var(--text-muted);text-align:center;font-size:0.85rem;"><i class="fas fa-route" style="font-size:2rem;opacity:0.3;display:block;margin-bottom:10px;"></i>' + TI.sin_itinerarios + '</div>'); return;
-            }
-            $('#itinerariosGrid').html(lista.slice(0,3).map((it, i) => {
-                const fecha = it.fecha_creacion ? new Date(it.fecha_creacion).toLocaleDateString(LOCALE,{day:'2-digit',month:'short'}) : '—';
-                const dest  = it.cantidad_destinos || it.total_atracciones || '—';
+            if (!lista.length) return vacio();
+
+            // Cada itinerario es un lugar planificado: se muestran todos, los más recientes primero
+            const fechaDe = it => new Date(it.fecha_visita || it.created_at || 0).getTime() || 0;
+            const orden = lista.slice().sort((a, b) => fechaDe(b) - fechaDe(a));
+            const EST = {
+                visitado:  { cls:'est-visitado',  icono:'fa-check-circle', txt:TI.est_visitado },
+                pendiente: { cls:'est-pendiente', icono:'fa-clock',        txt:TI.est_pendiente },
+                favorito:  { cls:'est-favorito',  icono:'fa-heart',        txt:TI.est_favorito },
+            };
+            const conteo = { visitado:0, pendiente:0, favorito:0 };
+            lista.forEach(it => { if (conteo[it.estado] !== undefined) conteo[it.estado]++; });
+
+            $('#itinerariosGrid').html(orden.map((it, i) => {
+                const f = it.fecha_visita || it.created_at;
+                const fecha = f ? new Date(f).toLocaleDateString(LOCALE, { day:'2-digit', month:'short', year:'numeric' }) : TI.sin_fecha;
+                const e = EST[it.estado] || EST.pendiente;
+                const img = it.imagen_url ? `background-image:url('${it.imagen_url}');` : '';
                 return `<div class="itinerario-item" onclick="window.location='index.php?c=itinerarios&a=index'">
-                    <div class="itin-icon"><i class="fas fa-route"></i></div>
-                    <div class="itin-info"><h5>${it.nombre||it.titulo||TI.itinerario_n.replace('{n}', i+1)}</h5><p>${it.descripcion ? it.descripcion.slice(0,50)+'...' : 'La Paz, Bolivia'}</p></div>
-                    <div class="itin-meta"><span>${fecha}</span><strong>${dest} ${TI.destinos}</strong></div>
+                    <div class="itin-thumb" style="${img}"></div>
+                    <div class="itin-info"><h5>${it.nombre || TI.itinerario_n.replace('{n}', i + 1)}</h5><p>${it.descripcion || ((it.ciudad || 'La Paz') + ', Bolivia')}</p></div>
+                    <div class="itin-meta"><span class="est-chip ${e.cls}"><i class="fas ${e.icono}"></i> ${e.txt}</span><span>${fecha}</span></div>
                 </div>`;
             }).join(''));
+
+            $('#itinerariosPie').html(`<div class="panel-chips">
+                    <span class="est-chip est-visitado"><i class="fas fa-check-circle"></i> ${conteo.visitado} ${TI.est_visitado}</span>
+                    <span class="est-chip est-pendiente"><i class="fas fa-clock"></i> ${conteo.pendiente} ${TI.est_pendiente}</span>
+                    <span class="est-chip est-favorito"><i class="fas fa-heart"></i> ${conteo.favorito} ${TI.est_favorito}</span>
+                </div>
+                <a href="index.php?c=itinerarios&a=index">${TI.ver_todos} <i class="fas fa-arrow-right"></i></a>`).show();
         },
-        error: () => { $('#kpiItinerarios').text('0'); $('#itinerariosGrid').html('<div style="padding:20px;color:var(--text-muted);text-align:center;font-size:0.85rem;"><i class="fas fa-route" style="font-size:2rem;opacity:0.3;display:block;margin-bottom:10px;"></i>' + TI.sin_itinerarios + '</div>'); }
+        error: () => { $('#kpiItinerarios').text('0'); vacio(); }
     });
 }
 

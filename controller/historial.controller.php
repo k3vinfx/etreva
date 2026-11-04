@@ -28,4 +28,21 @@ class HistorialController {
 
         require_once 'view/cliente/historial.php';
     }
+
+    /**
+     * JSON con las atracciones visitadas del usuario, para el "progreso viajero" del inicio.
+     * GET index.php?c=historial&a=Visitadas
+     */
+    public function Visitadas() {
+        header('Content-Type: application/json');
+        $usuarioLogueado = AuthMiddleware::resguardar();
+        $id_usuario = is_array($usuarioLogueado)
+            ? ($usuarioLogueado['id'] ?? null)
+            : ($usuarioLogueado->id ?? null);
+        if (!$id_usuario) {
+            echo json_encode(['success' => false, 'message' => 'No autorizado']);
+            return;
+        }
+        echo json_encode(['success' => true, 'ids' => $this->model->idsAtraccionesVisitadas((int)$id_usuario)]);
+    }
 }

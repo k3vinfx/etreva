@@ -68,4 +68,28 @@ class HistorialModel {
             return [];
         }
     }
+
+    /**
+     * IDs de las atracciones distintas que el usuario marcó como visitadas
+     * (misma fuente que el Historial de Viajes: itinerarios con estado 'visitado').
+     * Solo cuenta atracciones activas, para que el numerador nunca supere al total
+     * del catálogo que se muestra en el inicio.
+     */
+    public function idsAtraccionesVisitadas(int $id_usuario): array {
+        try {
+            $stmt = $this->pdo->prepare("
+                SELECT DISTINCT i.atracciones_id
+                FROM itinerarios.itinerarios i
+                JOIN catalogo.atracciones a ON a.id = i.atracciones_id
+                WHERE i.usuario_id = ?
+                  AND i.estado = 'visitado'
+                  AND a.estado = 'activo'
+            ");
+            $stmt->execute([$id_usuario]);
+            return array_map('intval', $stmt->fetchAll(PDO::FETCH_COLUMN));
+        } catch (PDOException $e) {
+            error_log('HistorialModel::idsAtraccionesVisitadas ERROR: ' . $e->getMessage());
+            return [];
+        }
+    }
 }
