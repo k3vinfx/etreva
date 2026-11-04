@@ -813,6 +813,10 @@ public function actualizarPago($userId, $plan, $monto, $periodo, $rutaImagen, ar
         'dias_carryover'       => $diasCarryover,
         'dias_totales'         => $diasTotales,
         'motivo_pago'          => $motivo,
+        // Método con el que pagó y su referencia (n.º de operación de Yape o hash de la transacción cripto)
+        'metodo_pago'          => $extras['metodo_pago']     ?? 'yape',
+        'referencia_pago'      => $extras['referencia_pago'] ?? null,
+        'monto_bs'             => $extras['monto_bs']        ?? null,
     ];
 
     // ── 5. Asegurar preferencias ──────────────────────────────────────────

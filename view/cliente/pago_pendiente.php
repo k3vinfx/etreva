@@ -364,25 +364,12 @@ $nombrePremium    = Lang::get('planes.premium_nombre');
 
         <hr class="modal-divider">
 
-        <!-- ── QR Yape ── -->
-        <!-- ── QR Yape ── -->
-        <div class="modal-qr-box">
-            <img src="assets/img/qr_yape.png" alt="QR Yape">
-            <div class="modal-qr-info">
-                <div class="modal-qr-badge">
-                    <i class="fas fa-qrcode" style="font-size:.6rem;"></i>
-                    Yape / QR
-                </div>
-                <p><?= Lang::get('pago_pendiente.modal_qr_instruccion') ?></p>
-            </div>
-        </div>
-
-        <hr class="modal-divider">
-
         <form id="form-datos-pago" enctype="multipart/form-data">
+            <!-- ── Método de pago: Yape · QR (Bolivia) o USDT/USDC BEP-20 ── -->
+            <?php include __DIR__ . '/partials/metodos_pago.php'; ?>
             <div class="form-group">
                 <label><?= Lang::get('pago_pendiente.modal_label') ?></label>
-                <input type="file" id="comprobante-file" name="comprobante" accept="image/*" required>
+                <input type="file" id="comprobante-file" name="comprobante" accept="image/*">
                 <input type="hidden" id="hidden-plan"    name="plan">
                 <input type="hidden" id="hidden-precio"  name="monto">
                 <input type="hidden" id="hidden-periodo" name="periodo">
@@ -455,6 +442,7 @@ document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('hidden-plan').value    = nombre;
             document.getElementById('hidden-precio').value  = precio;
             document.getElementById('hidden-periodo').value = periodoActivo;
+            EtrevaPago.setMonto(precio);
             modal.classList.add('open');
         });
     });
@@ -464,6 +452,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     document.getElementById('form-datos-pago').onsubmit = async function (e) {
         e.preventDefault();
+        // Yape y Binance Pay: captura del comprobante. Cripto: captura o hash de la transacción.
+        if (!EtrevaPago.valido(document.getElementById('comprobante-file').files.length > 0)) return;
         const formData = new FormData(this);
         cerrarModal();
 

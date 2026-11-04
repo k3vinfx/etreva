@@ -13,6 +13,7 @@
  */
 
 require_once 'model/adminUsuarios.php';
+require_once 'model/metodosPago.php';
 require_once 'controller/jwtHelper.php';
 
 class AdminUsuariosController {
@@ -129,6 +130,11 @@ class AdminUsuariosController {
                 'pago_fecha'       => $rp['fecha_pago']         ?? null,
                 'pago_vencimiento' => $rp['fecha_vencimiento']  ?? null,
                 'pago_comprobante' => $rp['ruta_comprobante']   ?? null,
+                'pago_metodo'      => $rp['metodo_pago']        ?? null,
+                'pago_metodo_txt'  => !empty($rp['metodo_pago']) ? MetodosPago::etiqueta($rp['metodo_pago']) : null,
+                'pago_explorador'  => MetodosPago::enlaceExplorador((string)($rp['metodo_pago'] ?? ''), $rp['referencia_pago'] ?? null),
+                'pago_referencia'  => $rp['referencia_pago']    ?? null,
+                'pago_monto_bs'    => $rp['monto_bs']           ?? null,
                 'pago_motivo'      => $rp['motivo_pago']        ?? null,
                 'pago_dias_totales'=> $rp['dias_totales']       ?? null,
                 'pago_carryover'   => $rp['dias_carryover']     ?? null,

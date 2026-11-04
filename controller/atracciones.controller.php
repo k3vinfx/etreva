@@ -1,5 +1,8 @@
 <?php
 require_once 'model/atracciones.php';
+require_once 'model/restriccionEdad.php';
+require_once 'model/consentimiento.php';
+require_once 'model/resenaFiltro.php';
 require_once 'controller/jwtHelper.php';
 require_once 'controller/middleware.php';
 
@@ -40,14 +43,29 @@ class AtraccionesController {
             exit();
         }
 
+        // Menores de 18: los bares y discotecas no se pueden abrir (Ley 259)
+        $id_usuario = RestriccionEdad::idDe($usuarioLogueado);
+        if (!RestriccionEdad::puedeVer($id_usuario, $id)) {
+            require_once 'view/cliente/modal/modal_restringido.php';
+            return;
+        }
+
+        // Trekking, montañismo y downhill: aviso de riesgo que el turista debe aceptar una vez por categoría
+        $avisoRiesgo = Consentimiento::categoriaRiesgo($id);
+        if ($avisoRiesgo && !Consentimiento::riesgoAceptado($id_usuario, $avisoRiesgo)) {
+            $categoriaRiesgo = $avisoRiesgo; $idAtraccionRiesgo = $id; $idModalRiesgo = 'modalDetalleAtraccion';
+            require_once 'view/cliente/modal/modal_riesgo.php';
+            return;
+        }
+
         $atraccion    = $this->atraccionesModel->obtenerDetalle($id);
         $categorias   = $this->atraccionesModel->obtenerCategoria($id);
         $fotos        = $atraccion['fotos_rutas'] ?? [];
         $resenas      = $this->atraccionesModel->obtenerResenas($id);
-        $relacionadas = $this->atraccionesModel->obtenerRelacionadas(
+        $relacionadas = RestriccionEdad::filtrar((array)$this->atraccionesModel->obtenerRelacionadas(
             $categorias['categoria'] ?? 'Otros',
             $id
-        );
+        ), $id_usuario, 'id');
         $categorias   = $this->atraccionesModel->obtenerCategoria($id, true); // para mostrar, en el idioma activo
 
         require_once 'view/cliente/modal/modal_atracciones_detalle.php';
@@ -68,14 +86,29 @@ class AtraccionesController {
             return;
         }
 
+        // Menores de 18: los bares y discotecas no se pueden abrir (Ley 259)
+        $id_usuario = RestriccionEdad::idDe($usuarioLogueado);
+        if (!RestriccionEdad::puedeVer($id_usuario, $id)) {
+            require_once 'view/cliente/modal/modal_restringido.php';
+            return;
+        }
+
+        // Trekking, montañismo y downhill: aviso de riesgo que el turista debe aceptar una vez por categoría
+        $avisoRiesgo = Consentimiento::categoriaRiesgo($id);
+        if ($avisoRiesgo && !Consentimiento::riesgoAceptado($id_usuario, $avisoRiesgo)) {
+            $categoriaRiesgo = $avisoRiesgo; $idAtraccionRiesgo = $id; $idModalRiesgo = 'modalDetalleAtraccion';
+            require_once 'view/cliente/modal/modal_riesgo.php';
+            return;
+        }
+
         $atraccion    = $this->atraccionesModel->obtenerDetalle($id);
         $categorias   = $this->atraccionesModel->obtenerCategoria($id);
         $fotos        = $atraccion['fotos_rutas'] ?? [];
         $resenas      = $this->atraccionesModel->obtenerResenas($id);
-        $relacionadas = $this->atraccionesModel->obtenerRelacionadas(
+        $relacionadas = RestriccionEdad::filtrar((array)$this->atraccionesModel->obtenerRelacionadas(
             $categorias['categoria'] ?? 'Otros',
             $id
-        );
+        ), $id_usuario, 'id');
         $categorias   = $this->atraccionesModel->obtenerCategoria($id, true); // para mostrar, en el idioma activo
 
         require_once 'view/cliente/modal/modal_atracciones_detalle.php';
@@ -97,6 +130,11 @@ class AtraccionesController {
         $id = isset($_GET['id']) ? intval($_GET['id']) : null;
         if (!$id) {
             echo json_encode(['success' => false, 'message' => 'ID requerido']);
+            return;
+        }
+
+        if (!RestriccionEdad::puedeVer(RestriccionEdad::idDe($usuarioLogueado), $id)) {
+            echo json_encode(['success' => false, 'restringida' => true, 'message' => Lang::get('legal.solo_mayores')]);
             return;
         }
 
@@ -144,6 +182,14 @@ class AtraccionesController {
 
         if (!$input || !isset($input['atraccion_id']) || !isset($input['puntuacion'])) {
             echo json_encode(['success' => false, 'message' => 'Datos incompletos']);
+            return;
+        }
+
+        // Reseñas repetidas o clonadas: no se publican (Reglamento, punto 9)
+        $itPropio = $this->atraccionesModel->itinerarioResena($id_usuario, intval($input['atraccion_id']));
+        $dup = ResenaFiltro::motivoDuplicado($input['comentario'] ?? '', intval($input['atraccion_id']), $itPropio);
+        if ($dup) {
+            echo json_encode(['success' => false, 'duplicada' => $dup, 'message' => Lang::get('legal.resena_' . $dup)]);
             return;
         }
 
@@ -199,6 +245,18 @@ class AtraccionesController {
         $atraccion_id = intval($input['atraccion_id'] ?? 0);
         if (!$atraccion_id) {
             echo json_encode(['success' => false, 'message' => 'ID de atracción no válido']);
+            return;
+        }
+
+        // Menores de 18: no pueden planificar visitas a bares ni discotecas (Ley 259)
+        if (!RestriccionEdad::puedeVer($id_usuario, $atraccion_id)) {
+            echo json_encode(['success' => false, 'restringida' => true, 'message' => Lang::get('legal.solo_mayores')]);
+            return;
+        }
+        // Actividad de riesgo: debe haber aceptado el aviso antes de planificar la visita
+        $catRiesgo = Consentimiento::categoriaRiesgo($atraccion_id);
+        if ($catRiesgo && !Consentimiento::riesgoAceptado($id_usuario, $catRiesgo)) {
+            echo json_encode(['success' => false, 'requiere_riesgo' => $catRiesgo, 'message' => Lang::get('legal.riesgo_pendiente')]);
             return;
         }
 

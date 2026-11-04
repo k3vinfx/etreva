@@ -175,28 +175,53 @@ class PagoController {
             return;
         }
 
-        if (!$file || $file['error'] !== UPLOAD_ERR_OK) {
+        // ── Método de pago (config/pagos.php) ─────────────────────────────────
+        // Yape / QR Simple (Bolivia), Binance Pay o USDT/USDC en TRC-20, BEP-20, Polygon o ERC-20.
+        // El sistema no cobra en línea: registra el método y la prueba para que el administrador valide.
+        require_once 'model/metodosPago.php';
+        $metodo     = (string)($_POST['metodo_pago'] ?? 'yape');
+        $referencia = trim(mb_substr((string)($_POST['referencia_pago'] ?? ''), 0, 80));
+        if (!MetodosPago::valido($metodo)) {
             ob_clean();
-            echo json_encode(['success' => false, 'message' => 'Comprobante no recibido']);
+            echo json_encode(['success' => false, 'message' => 'Método de pago no válido']);
+            return;
+        }
+        $esCripto = MetodosPago::esCripto($metodo);
+        if (!$esCripto) $referencia = '';   // Yape y Binance Pay se prueban solo con la captura
+        if ($referencia !== '' && !MetodosPago::hashValido($metodo, $referencia)) {
+            ob_clean();
+            echo json_encode(['success' => false, 'message' => Lang::get('pagos.hash_invalido')]);
             return;
         }
 
-        // ── Validar y subir comprobante ───────────────────────────────────────
-        $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-        if (!in_array($ext, ['jpg','jpeg','png','gif','webp']) || $file['size'] > 5 * 1024 * 1024) {
+        // ── Prueba del pago: captura del comprobante (en cripto, o el hash de la transacción) ──
+        $tieneArchivo = $file && $file['error'] === UPLOAD_ERR_OK;
+        if (!$tieneArchivo && !($esCripto && $referencia !== '')) {
             ob_clean();
-            echo json_encode(['success' => false, 'message' => 'Archivo inválido (solo imágenes, máx 5MB)']);
+            echo json_encode(['success' => false, 'message' => Lang::get($esCripto ? 'pagos.falta_prueba' : 'pagos.falta_captura')]);
             return;
         }
+        $montoBs = $metodo === 'yape' ? round($monto * (float)MetodosPago::config()['tipo_cambio_bs'], 2) : null;
 
-        $uploadDir  = 'uploads/comprobantes/';
-        if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
-        $rutaImagen = $uploadDir . "pago_{$userId}_" . time() . ".{$ext}";
+        // ── Validar y subir comprobante (si lo adjuntó) ───────────────────────
+        $rutaImagen = null;
+        if ($tieneArchivo) {
+            $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+            if (!in_array($ext, ['jpg','jpeg','png','gif','webp']) || $file['size'] > 5 * 1024 * 1024) {
+                ob_clean();
+                echo json_encode(['success' => false, 'message' => 'Archivo inválido (solo imágenes, máx 5MB)']);
+                return;
+            }
 
-        if (!move_uploaded_file($file['tmp_name'], $rutaImagen)) {
-            ob_clean();
-            echo json_encode(['success' => false, 'message' => 'Error al guardar el comprobante']);
-            return;
+            $uploadDir  = 'uploads/comprobantes/';
+            if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
+            $rutaImagen = $uploadDir . "pago_{$userId}_" . time() . ".{$ext}";
+
+            if (!move_uploaded_file($file['tmp_name'], $rutaImagen)) {
+                ob_clean();
+                echo json_encode(['success' => false, 'message' => 'Error al guardar el comprobante']);
+                return;
+            }
         }
 
         // ── Leer estado actual del usuario ────────────────────────────────────
@@ -281,6 +306,9 @@ class PagoController {
                 'dias_totales'               => $dias_totales,
                 'fecha_vencimiento_override' => $fechaVencimiento,
                 'motivo'                     => $motivo_pago,   // 'nuevo' | 'renovacion' | 'upgrade'
+                'metodo_pago'                => $metodo,        // 'yape' | 'binance_pay' | 'usdt_trc20' | 'usdc_bep20' …
+                'referencia_pago'            => $referencia !== '' ? $referencia : null,
+                'monto_bs'                   => $montoBs,
             ]
         );
 

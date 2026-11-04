@@ -188,6 +188,8 @@
 </head>
 
 <?php
+require_once 'model/consentimiento.php';
+require_once 'model/restriccionEdad.php';
 include 'view/menu.php';
 include 'modal/modal_guardar_itinerario.php';
 
@@ -286,9 +288,11 @@ $t = [
                 <button class="filtro-btn" data-cat="cultura">
                     <i class="fas fa-landmark"></i> <?= Lang::get('buscar.cat_cultura') ?>
                 </button>
+                <?php if (!RestriccionEdad::esMenor($_SESSION['user_id'] ?? 0)): // menores de 18: sin bares ni discotecas ?>
                 <button class="filtro-btn" data-cat="vida_nocturna">
                     <i class="fas fa-glass-cheers"></i> <?= Lang::get('buscar.cat_vida_nocturna') ?>
                 </button>
+                <?php endif; ?>
                 <button class="filtro-btn" data-cat="gastronomia">
                     <i class="fas fa-utensils"></i> <?= Lang::get('buscar.cat_gastronomia') ?>
                 </button>
@@ -468,6 +472,10 @@ function obtenerCfg(categoria, subcategoria) {
 // ════════════════════════════════════════════════════════
 //  ESTADO GLOBAL
 // ════════════════════════════════════════════════════════
+// Avisos de riesgo ya aceptados por el turista y categorías que lo requieren
+const CATS_RIESGO = <?= json_encode(array_values(Consentimiento::CATEGORIAS_RIESGO)) ?>;
+const RIESGOS_OK  = <?= json_encode(Consentimiento::riesgosAceptados($_SESSION['user_id'] ?? 0)) ?>;
+
 const ESTADO = {
     pagina: 1, porPagina: 18, totalItems: 0,
     categoria: 'todos', busqueda: '', orden: 'puntuacion_desc', mes: 0,
@@ -919,10 +927,26 @@ $(document).ready(function() {
 
     $(`.mes-btn[data-mes="${MES_ACTUAL}"]`).append('<span class="mes-now-dot"></span>');
 
+    // Trekking, montañismo y downhill: antes de mostrarlos se pide aceptar el aviso de riesgo (una vez por categoría)
     $('.filtro-btn').on('click', function() {
+        const btn = this, cat = $(btn).data('cat');
+        if (!CATS_RIESGO.includes(cat) || RIESGOS_OK.includes(cat)) return seleccionarCategoria(btn);
+        $.get('index.php?c=legal&a=ModalRiesgo&cat=' + encodeURIComponent(cat), function (html) {
+            if (!$.trim(html)) { RIESGOS_OK.push(cat); return seleccionarCategoria(btn); }
+            $('#modalAvisoRiesgo').remove();
+            $('body').append(html);
+            const ok = e => { if (e.detail.categoria !== cat) return; RIESGOS_OK.push(cat); seleccionarCategoria(btn); fin(); };
+            const fin = () => { document.removeEventListener('etreva:riesgo-aceptado', ok); document.removeEventListener('etreva:riesgo-cancelado', fin); };
+            document.addEventListener('etreva:riesgo-aceptado', ok);
+            document.addEventListener('etreva:riesgo-cancelado', fin);
+            new bootstrap.Modal(document.getElementById('modalAvisoRiesgo')).show();
+        });
+    });
+
+    function seleccionarCategoria(btn) {
         $('.filtro-btn').removeClass('active');
-        $(this).addClass('active');
-        ESTADO.categoria = $(this).data('cat');
+        $(btn).addClass('active');
+        ESTADO.categoria = $(btn).data('cat');
         ESTADO.mes = 0;
         if (ESTADO.categoria === 'festividades') {
             ESTADO.mes = MES_ACTUAL;
@@ -933,7 +957,7 @@ $(document).ready(function() {
             $('#mesesWrap').slideUp(150);
         }
         aplicarFiltros();
-    });
+    }
 
     // Filtros avanzados
     const SEL_FILTROS = { fMotivo:'motivo', fCompania:'compania', fDia:'dia', fHorario:'horario', fDuracion:'duracion', fDificultad:'dificultad' };

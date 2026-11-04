@@ -409,6 +409,11 @@ try {
             $txt  = $resenas[$lang];
             $comentario = $sent === 'pos' ? azar($txt['pos'][$a['cat']] ?? $txt['pos'][7]) : azar($txt[$sent]);
             if (prob(.12)) $comentario = null; // calificó sin escribir
+            // Cada comentario se usa una sola vez: no se generan reseñas clonadas (ver model/resenaFiltro.php)
+            static $usados = [];
+            if ($comentario !== null) {
+                if (isset($usados[$comentario])) $comentario = null; else $usados[$comentario] = true;
+            }
             $tags = $sent === 'neg' ? [azar($tagsNeg)] : array_values(array_unique([azar($tagsPos), azar($tagsPos)]));
             $cuando = $fv->modify('+' . mt_rand(1, 30) . ' hours');
             if ($cuando > $hoy) $cuando = $hoy->modify('-10 minutes');

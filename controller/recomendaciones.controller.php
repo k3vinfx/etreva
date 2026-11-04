@@ -2,6 +2,7 @@
 //Se incluye el modelo donde conectará el controlador.
 require_once 'model/login.php';
 require_once 'model/recomendaciones.php';
+require_once 'model/restriccionEdad.php';
 require_once 'controller/jwtHelper.php';
 require_once 'controller/middleware.php';
 
@@ -102,6 +103,7 @@ class RecomendacionesController{
         
         // Obtener recomendaciones del modelo
         $recomendaciones = $this->recomendacionesModel->obtenerRecomendacionesDelModelo($id_usuario);
+        $recomendaciones = RestriccionEdad::filtrar((array)$recomendaciones, $id_usuario, 'output');
         
         echo json_encode([
             'success' => true,
@@ -129,6 +131,10 @@ class RecomendacionesController{
             return;
         }
         
+        if (!RestriccionEdad::puedeVer(RestriccionEdad::idDe($usuarioLogueado), $atraccion_id)) {
+            echo json_encode(['success' => false, 'restringida' => true, 'message' => Lang::get('legal.solo_mayores')]);
+            return;
+        }
         $detalle = $this->recomendacionesModel->obtenerDetalleAtraccion($atraccion_id);
         
         if ($detalle) {
@@ -624,6 +630,9 @@ public function ObtenerModeloMR() {
                 $ids_procesados[] = $output_id;
             }
         }
+
+        // Menores de 18: sin bares ni discotecas (Ley 259). Se filtra antes de elegir las 25.
+        $candidatos = RestriccionEdad::filtrar($candidatos, $id_usuario, 'atraccion_id');
 
         if (empty($candidatos)) {
             ob_clean();

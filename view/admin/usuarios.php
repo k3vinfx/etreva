@@ -713,9 +713,22 @@ function renderModalDetalle(c) {
     document.getElementById('modalTitulo').textContent =
         `${c.nombre||''} ${c.apellido||''} — #${c.id}`;
 
+    // Método de pago declarado por el cliente y, en cripto, el hash con enlace al explorador de su red
+    let metodoHtml = '';
+    if (c.pago_metodo) {
+        const hashHtml = !c.pago_referencia ? ''
+            : `<div><b>Hash de la transacción:</b> ${c.pago_explorador
+                ? `<a href="${escHtml(c.pago_explorador)}" target="_blank" rel="noopener" style="word-break:break-all;">${escHtml(c.pago_referencia)} <i class="fas fa-external-link-alt"></i></a>`
+                : escHtml(c.pago_referencia)}</div>`;
+        metodoHtml = `<div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:10px 14px;margin-bottom:12px;font-size:.84rem;line-height:1.6;">
+            <div><b>Método:</b> ${escHtml(c.pago_metodo_txt || c.pago_metodo)}${c.pago_monto_bs ? ` · <b>Bs ${escHtml(c.pago_monto_bs)}</b>` : ''}</div>
+            ${hashHtml}
+        </div>`;
+    }
+
     let compHtml;
     if (c.pago_comprobante) {
-        compHtml = `<div class="comprobante-wrap">
+        compHtml = metodoHtml + `<div class="comprobante-wrap">
             <img src="${escHtml(c.pago_comprobante)}" alt="Comprobante"
                  onerror="this.outerHTML='<div class=\\'no-comp\\'>⚠️ No se pudo cargar la imagen</div>'">
             <br>
@@ -724,7 +737,7 @@ function renderModalDetalle(c) {
             </a>
         </div>`;
     } else {
-        compHtml = `<div class="comprobante-wrap"><div class="no-comp">
+        compHtml = metodoHtml + `<div class="comprobante-wrap"><div class="no-comp">
             <i class="fas fa-file-slash" style="font-size:1.8rem;display:block;margin-bottom:8px;opacity:.3;"></i>
             Sin comprobante adjunto
         </div></div>`;

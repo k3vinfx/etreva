@@ -841,6 +841,15 @@ body.dark-mode .atr-footer .btn-outline-secondary {
             <!-- ── BODY ── -->
             <div class="atr-body">
 
+                <?php if (!empty($avisoRiesgo)): ?>
+                <!-- Recordatorio de actividad de riesgo (el turista ya aceptó el aviso para esta categoría) -->
+                <div style="display:flex;gap:10px;align-items:flex-start;background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;border-radius:12px;padding:10px 14px;margin-bottom:16px;font-size:.84rem;line-height:1.45;">
+                    <span style="font-size:1.2rem;line-height:1;">⚠️</span>
+                    <div><strong><?= Lang::get('legal.riesgo_recordatorio_titulo') ?></strong> <?= Lang::get('legal.riesgo_recordatorio') ?>
+                        <a href="index.php?c=legal&a=Reglamento" target="_blank" rel="noopener" style="color:#9a3412;text-decoration:underline;"><?= Lang::get('legal.ver_completo') ?></a></div>
+                </div>
+                <?php endif; ?>
+
                 <!-- Descripción -->
                 <?php if ($descripcion): ?>
                 <div class="atr-section">

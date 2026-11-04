@@ -9,6 +9,8 @@ if (file_exists($autoload)) {
 }
 
 require_once 'model/itinerarios.php';
+require_once 'model/restriccionEdad.php';
+require_once 'model/resenaFiltro.php';
 require_once 'controller/jwtHelper.php';
 require_once 'controller/middleware.php';
 require_once 'model/login.php';
@@ -99,6 +101,9 @@ class ItinerariosController {
         } else {
             $itinerarios = $this->itinerariosModel->obtenerItinerarios($id_usuario);
         }
+
+        // Menores de 18: sin bares ni discotecas (Ley 259)
+        $itinerarios = RestriccionEdad::filtrar((array)$itinerarios, $id_usuario, 'atracciones_id');
 
         if ($formato === 'json') {
             header('Content-Type: application/json');
@@ -276,6 +281,14 @@ class ItinerariosController {
         if (!$itinerario_id || !$atraccion_id || $calificacion < 1 || $calificacion > 5) {
             ob_clean();
             echo json_encode(['success' => false, 'message' => 'Datos inválidos o puntuación fuera de rango']);
+            return;
+        }
+
+        // Reseñas repetidas o clonadas: no se publican (Reglamento, punto 9)
+        $dup = ResenaFiltro::motivoDuplicado($comentario, $atraccion_id, $itinerario_id);
+        if ($dup) {
+            ob_clean();
+            echo json_encode(['success' => false, 'duplicada' => $dup, 'message' => Lang::get('legal.resena_' . $dup)]);
             return;
         }
 

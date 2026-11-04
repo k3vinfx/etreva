@@ -1,5 +1,6 @@
 <?php
 require_once 'model/favoritos.php';
+require_once 'model/restriccionEdad.php';
 require_once 'controller/jwtHelper.php';
 require_once 'controller/middleware.php';
 
@@ -35,7 +36,7 @@ class FavoritosController {
         $formato = $_GET['formato']      ?? 'html';
 
         // Obtener todos los favoritos del usuario
-        $favoritos = $this->favoritosModel->obtenerFavoritos($id_usuario);
+        $favoritos = RestriccionEdad::filtrar((array)$this->favoritosModel->obtenerFavoritos($id_usuario), $id_usuario, 'atracciones_id');
 
         // Respuesta JSON (para uso por API / debug)
         if ($formato === 'json') {
@@ -103,7 +104,7 @@ class FavoritosController {
         $id_usuario = is_array($usuario) ? ($usuario['id'] ?? null) : ($usuario->id ?? null);
         $limite     = intval($_GET['limite'] ?? 50);
 
-        $favoritos = $this->favoritosModel->obtenerFavoritos($id_usuario, $limite);
+        $favoritos = RestriccionEdad::filtrar((array)$this->favoritosModel->obtenerFavoritos($id_usuario, $limite), $id_usuario, 'atracciones_id');
 
         echo json_encode([
             'success'   => true,

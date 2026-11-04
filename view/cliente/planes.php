@@ -484,10 +484,8 @@ $planesData = [
                 <i class="fas fa-gift"></i>
                 <p id="mpCoAlertTxt"></p>
             </div>
-            <div class="mp-qr">
-                <i class="fas fa-qrcode"></i>
-                <span><?= Lang::get('planes.modal_qr') ?></span>
-            </div>
+            <!-- Método de pago: Yape · QR (Bolivia) o USDT/USDC BEP-20 -->
+            <?php include __DIR__ . '/partials/metodos_pago.php'; ?>
             <div class="mp-upload">
                 <input type="file" id="mpFile" accept="image/*" onchange="mpOnFile(this)">
                 <i class="fas fa-cloud-upload-alt up-icon" id="mpUpIcon"></i>
@@ -610,6 +608,7 @@ function _mpResumen() {
     document.getElementById('mpPeriodo').textContent  = PERIODOS[_periodo];
     document.getElementById('mpDiasBase').textContent = diasBase + ' ' + LANG_PLANES.dias_txt;
     document.getElementById('mpTotal').textContent    = '$' + precio;
+    EtrevaPago.setMonto(precio);
 
     if (carryover > 0) {
         document.getElementById('mpRowCarryover').style.display = '';
@@ -629,6 +628,12 @@ function _mpResumen() {
     }
 }
 
+// El botón se habilita con la captura, o en cripto también con un hash válido
+EtrevaPago.alCambiar(() => {
+    const b = document.getElementById('mpBtn');
+    if (b) b.disabled = !EtrevaPago.listo(!!document.getElementById('mpFile').files[0]);
+});
+
 function mpOnFile(input) {
     const f = input.files[0];
     if (!f) return;
@@ -646,7 +651,9 @@ function mpOnFile(input) {
 
 async function mpProcesar() {
     const archivo = document.getElementById('mpFile').files[0];
-    if (!archivo || !_planNombre) return;
+    if (!_planNombre) return;
+    // Yape y Binance Pay: captura del comprobante. Cripto: captura o hash de la transacción.
+    if (!EtrevaPago.valido(!!archivo)) return;
 
     const precio = PRECIOS[_planNombre]?.[_periodo] ?? 0;
     cerrarModal();
@@ -662,7 +669,8 @@ async function mpProcesar() {
     fd.append('plan',        _planNombre);
     fd.append('monto',       precio);
     fd.append('periodo',     _periodo);
-    fd.append('comprobante', archivo);
+    if (archivo) fd.append('comprobante', archivo);
+    EtrevaPago.agregar(fd);
 
     try {
         const r      = await fetch('index.php?c=pago&a=ProcesarPago', { method:'POST', body:fd });

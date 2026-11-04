@@ -1,5 +1,6 @@
 <?php
 require_once 'model/recomendaciones.php';
+require_once 'model/restriccionEdad.php';
 require_once 'controller/jwtHelper.php';
 require_once 'controller/middleware.php';
 require_once 'lang/Lang.php';
@@ -47,6 +48,8 @@ class BuscarController {
             }
 
             $atracciones = $this->recomendacionesModel->obtenerTodasAtracciones();
+            // Menores de 18: sin bares ni discotecas (Ley 259)
+            $atracciones = RestriccionEdad::filtrar($atracciones, RestriccionEdad::idDe($usuarioLogueado), 'id');
 
             $buffer = ob_get_clean();
             if (!empty($buffer)) {

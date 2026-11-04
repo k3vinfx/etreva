@@ -51,8 +51,8 @@ class ImagenAtraccion
         2 => [['Huayna Potosi', 'Cordillera Real Bolivia mountain', 'Illimani'], ['huayna','illimani','cordillera','nevado','mountain','glaciar','glacier','condoriri','pequeño alpamayo']],
         3 => [['museo La Paz Bolivia', 'La Paz Bolivia colonial'], ['museo','museum','colonial','iglesia','church','calle','teatro','cultural']],
         4 => [['Death Road Bolivia bike', 'Yungas road Bolivia'], ['bike','bici','camino','road','yungas','ruta','muerte','death']],
-        5 => [['La Paz Bolivia night', 'cocktail bar', 'nightclub dance floor'], ['night','noche','bar','club','cocktail','coctel','disco','pub','music']],
-        6 => [['Bolivian cuisine', 'comida boliviana', 'restaurant dish'], ['food','comida','dish','plato','cuisine','cocina','restaurant','restaurante','salteña','anticucho','sopa','meal']],
+        5 => [['La Paz Bolivia night', 'Sopocachi La Paz Bolivia', 'La Paz Bolivia bar', 'Bolivia nightlife'], ['night','noche','bar','club','cocktail','coctel','disco','pub','music']],
+        6 => [['Bolivian cuisine', 'comida boliviana', 'Bolivian food', 'restaurante La Paz Bolivia'], ['food','comida','dish','plato','cuisine','cocina','restaurant','restaurante','salteña','anticucho','sopa','meal']],
         7 => [['La Paz Bolivia street', 'La Paz Bolivia city'], ['la paz','calle','street','plaza','city','ciudad','teleferico','cholet','arquitectura']],
     ];
 
@@ -73,11 +73,18 @@ class ImagenAtraccion
         'teatro' => ['theatre','theater','teatro'], 'galeria' => ['gallery','galeria','art','arte'], 'arte' => ['art','arte','mural','gallery'],
     ];
 
-    // Lugares que confirman que la foto es de Bolivia / La Paz
-    private const CONTEXTO_BO = '/\b(bolivia|bolivian|boliviana|boliviano|la paz|el alto|yungas|titicaca|chacaltaya|illimani|huayna|sopocachi|calacoto|miraflores|obrajes|achumani|mallasa|copacabana|coroico|zongo|tiwanaku|tiahuanaco|altiplano|chulumani|achocalla|isla del sol|condoriri|choro|takesi|sorata)\b/u';
+    // Lugares que confirman que la foto es de Bolivia. Solo términos inequívocos: "La Paz", "Copacabana",
+    // "Miraflores" o "Titicaca" existen también en México, España, Brasil o Perú, así que por sí solos
+    // NO bastan (p. ej. "Hotel Príncipe de la Paz" en Aranjuez, España). Sí cuentan términos propios
+    // de La Paz / El Alto (Alasita, ekeko, paceña, Abaroa, Chuquiago…).
+    private const CONTEXTO_BO = '/\b(bolivia|bolivian|bolivians|boliviana|bolivianas|boliviano|bolivianos|yungas|chacaltaya|illimani|huayna potosi|sopocachi|calacoto|achumani|mallasa|coroico|tiwanaku|tiahuanaco|chulumani|achocalla|condoriri|takesi|sorata|zongo|mecapaca|irpavi|cholet|cholets|mi teleferico|isla del sol|uyuni|el alto|alasita|alasitas|ekeko|ekekos|pacena|pacenas|paceno|pacenos|abaroa|chuquiago|illampu|mercado de las brujas|witches market)\b/u';
+
+    // Otro país nombrado en el TÍTULO de la foto: se descarta aunque sus categorías mencionen Bolivia
+    // (p. ej. "Vista de Puno y el Titicaca, Perú", categorizada en el lago Titicaca Bolivia–Perú).
+    private const OTRO_PAIS = '/\b(peru|puno|chile|argentina|espana|spain|mexico|brasil|brazil|ecuador|colombia|paraguay|uruguay|venezuela|usa|united states|england|scotland|wales|uk|france|germany|deutschland|italia|italy|poland|polska|krakow|alicante|madrid|aranjuez|louisiana|new orleans|freiburg)\b/u';
 
     // Nunca: personas, mapas, logos, banderas, documentos…
-    private const EXCLUIR = '/\b(retrato|portrait|portraits|nino|nina|ninos|ninas|child|children|kid|kids|girl|girls|boy|boys|mujer|mujeres|woman|women|hombre|hombres|man|men|persona|people|person|campesina|campesino|cholita|selfie|logo|logotipo|mapa|map|bandera|flag|escudo|coat of arms|diagrama|diagram|poster|afiche|cartel|documento|document|firma|signature|billete|banknote|moneda|coin|sello|stamp|plano|grafico|chart|screenshot|captura|politico|presidente|alcalde|wedding|boda|funeral|mhnt|specimen|especimen|dorsal|ventral|insect|insecto|moth|polilla|herbarium|herbario|fossil|fosil|skull|craneo)\b/u';
+    private const EXCLUIR = '/\b(retrato|portrait|portraits|nino|nina|ninos|ninas|child|children|kid|kids|girl|girls|boy|boys|mujer|mujeres|woman|women|hombre|hombres|man|men|persona|people|person|campesina|campesino|cholita|selfie|logo|logotipo|mapa|map|bandera|flag|escudo|coat of arms|diagrama|diagram|poster|afiche|cartel|documento|document|firma|signature|billete|banknote|moneda|coin|sello|stamp|plano|grafico|chart|screenshot|captura|politico|presidente|alcalde|wedding|boda|funeral|mhnt|specimen|especimen|dorsal|ventral|insect|insecto|moth|polilla|herbarium|herbario|fossil|fosil|skull|craneo|brachiopod|brachiopoda|braquiopodo|spirifer|graphic|graphics|infographic|infografia|stripes|temperature|temperatura|climate|warming)\b/u';
 
     /* ════════════════════════ API pública ═════════════════════════ */
 
@@ -404,7 +411,7 @@ class ImagenAtraccion
                     $vistas[$img['url']] = true;
                     // El título debe nombrar el lugar Y la foto debe ser de Bolivia/La Paz
                     if (!self::coincide($img['titulo'], $claves)) continue;
-                    if (!preg_match(self::CONTEXTO_BO, $img['contexto'])) continue;
+                    if (!self::esDeBolivia($img['contexto'])) continue;
                     $candidatas[] = $img;
                 }
                 if (count($candidatas) >= self::MAX_FOTOS) break;
@@ -481,9 +488,11 @@ class ImagenAtraccion
         if (!is_dir(self::REF_DIR)) @mkdir(self::REF_DIR, 0775, true);
         $slug = trim(preg_replace('/[^a-z0-9]+/', '-', self::normalizar($nombre)), '-') ?: 'general';
         $meta = self::REF_DIR . "/{$slug}.json";
+        // Solo fotos verificadas como de Bolivia: nunca se muestran lugares de otros países
         $leer = function () use ($meta) {
             $c = is_file($meta) ? (json_decode((string)file_get_contents($meta), true) ?: []) : [];
-            $c['fotos'] = array_values(array_filter($c['fotos'] ?? [], fn($f) => is_file(self::REF_DIR . '/' . $f['archivo'])));
+            $c['fotos'] = array_values(array_filter($c['fotos'] ?? [],
+                fn($f) => !empty($f['bolivia']) && is_file(self::REF_DIR . '/' . $f['archivo'])));
             return $c;
         };
         $c = $leer();
@@ -502,13 +511,14 @@ class ImagenAtraccion
                 foreach (self::buscarCommons($q) as $img) {
                     if (isset($vistas[$img['url']])) continue;
                     $vistas[$img['url']] = true;
-                    if (!self::mencionaAlguna($img['contexto'], $palabras)) continue;   // debe tratar del tema
-                    $img['bolivia'] = (bool)preg_match(self::CONTEXTO_BO, $img['contexto']);
+                    if (!self::mencionaAlguna($img['tema'], $palabras)) continue;       // el título o la descripción deben tratar del tema
+                    if (!self::esDeBolivia($img['contexto'], $img['titulo'])) continue;                 // y ser de Bolivia
+                    $img['bolivia'] = true;
+                    unset($img['tema']);
                     $candidatas[] = $img;
                 }
                 if (count($candidatas) >= self::REF_MAX * 2) break;
             }
-            usort($candidatas, fn($x, $y) => $y['bolivia'] <=> $x['bolivia']);   // primero las de Bolivia
 
             $fotos = [];
             foreach ($candidatas as $img) {
@@ -556,6 +566,8 @@ class ImagenAtraccion
             $contexto = self::normalizar(($p['title'] ?? '') . ' ' . strip_tags($md['ImageDescription']['value'] ?? '') . ' '
                        . ($md['Categories']['value'] ?? '') . ' ' . strip_tags($md['ObjectName']['value'] ?? ''));
             if (preg_match(self::EXCLUIR, $contexto)) continue;
+            $tema = self::normalizar(($p['title'] ?? '') . ' ' . strip_tags($md['ImageDescription']['value'] ?? '') . ' '
+                       . strip_tags($md['ObjectName']['value'] ?? ''));
 
             $out[] = [
                 'url'      => $src,
@@ -564,6 +576,7 @@ class ImagenAtraccion
                 'autor'    => trim(strip_tags($md['Artist']['value'] ?? '')),
                 'licencia' => $md['LicenseShortName']['value'] ?? null,
                 'contexto' => $contexto,
+                'tema'     => $tema,
             ];
         }
         return $out;
@@ -644,10 +657,107 @@ class ImagenAtraccion
         return false;
     }
 
+    /** El texto (título, descripción y categorías de Commons, normalizado) ubica la foto en Bolivia */
+    private static function esDeBolivia(string $contexto, string $titulo = ''): bool
+    {
+        $t = self::normalizar($titulo);
+        if ($t !== '' && preg_match(self::OTRO_PAIS, $t) && !preg_match(self::CONTEXTO_BO, $t)) return false;
+        return (bool)preg_match(self::CONTEXTO_BO, self::normalizar($contexto));
+    }
+
+    /* ════════════════ Verificación de fotos ya descargadas ════════════════ */
+
+    /**
+     * Vuelve a consultar en Wikimedia el título, la descripción y las categorías de cada foto descargada
+     * y conserva solo las de Bolivia:
+     *   · referenciales (_ref/*.json): se marcan bolivia = true/false; la galería solo usa las true.
+     *   · del lugar ({id}_{n}.jpg con crédito de Commons): las que no son de Bolivia se apartan a _descartadas/.
+     * Las fotos subidas por el administrador no se tocan (no tienen crédito de Commons).
+     * Devuelve un resumen. Pensado para la línea de comandos (herramientas/verificar_fotos_bolivia.php).
+     */
+    public static function verificarBolivia(?callable $log = null): array
+    {
+        $log = $log ?: function ($m) {};
+        $res = ['ref_ok' => 0, 'ref_fuera' => 0, 'lugar_ok' => 0, 'lugar_apartadas' => 0, 'sin_respuesta' => 0];
+
+        // 1. Reunir todos los títulos de Commons
+        $refs = [];
+        foreach (glob(self::REF_DIR . '/*.json') ?: [] as $f) $refs[$f] = json_decode((string)file_get_contents($f), true) ?: [];
+        $lugares = [];
+        foreach (glob(self::CACHE_DIR . '/*.json') ?: [] as $f) $lugares[$f] = json_decode((string)file_get_contents($f), true) ?: [];
+        $titulos = [];
+        foreach ([$refs, $lugares] as $grupo) foreach ($grupo as $c) foreach ($c['fotos'] ?? [] as $x) if (!empty($x['titulo'])) $titulos[$x['titulo']] = true;
+        $titulos = array_keys($titulos);
+        $log(count($titulos) . ' fotos de Wikimedia a verificar');
+
+        // 2. Contexto de cada título (de a 50 por consulta)
+        $contexto = [];
+        foreach (array_chunk($titulos, 50) as $i => $lote) {
+            $url = 'https://commons.wikimedia.org/w/api.php?' . http_build_query([
+                'action' => 'query', 'format' => 'json', 'formatversion' => 2, 'titles' => implode('|', $lote),
+                'prop' => 'imageinfo|categories', 'cllimit' => 'max', 'iiprop' => 'extmetadata',
+                'iiextmetadatafilter' => 'ImageDescription|Categories|ObjectName',
+            ]);
+            $pages = json_decode((string)self::http($url), true)['query']['pages'] ?? null;
+            if ($pages === null) { $log("lote $i sin respuesta"); continue; }
+            foreach ($pages as $p) {
+                $md = $p['imageinfo'][0]['extmetadata'] ?? [];
+                $cats = implode(' ', array_map(fn($c) => $c['title'] ?? '', $p['categories'] ?? []));
+                $contexto[$p['title']] = ($p['title'] ?? '') . ' ' . strip_tags($md['ImageDescription']['value'] ?? '') . ' '
+                    . ($md['Categories']['value'] ?? '') . ' ' . strip_tags($md['ObjectName']['value'] ?? '') . ' ' . $cats;
+            }
+            $log('lote ' . ($i + 1) . ' de ' . ceil(count($titulos) / 50) . ': ' . count($pages) . ' páginas');
+        }
+        $log(count($contexto) . ' fotos con datos de Wikimedia');
+        // La API puede normalizar títulos (espacios/guiones bajos): buscar también así
+        $ctx = function (string $t) use ($contexto) {
+            return $contexto[$t] ?? $contexto[str_replace('_', ' ', $t)] ?? null;
+        };
+
+        // 3. Referenciales: marcar
+        foreach ($refs as $f => $c) {
+            foreach ($c['fotos'] ?? [] as $k => $x) {
+                $texto = $ctx($x['titulo'] ?? '');
+                if ($texto === null) { $res['sin_respuesta']++; $c['fotos'][$k]['bolivia'] = false; continue; }
+                $ok = self::esDeBolivia($texto, $x['titulo'] ?? '') && !preg_match(self::EXCLUIR, self::normalizar($texto));   // de Bolivia y sin gráficos, personas, fósiles…
+                $c['fotos'][$k]['bolivia'] = $ok;
+                $res[$ok ? 'ref_ok' : 'ref_fuera']++;
+            }
+            $c['verificado_bolivia'] = time();
+            // Sin ninguna foto de Bolivia: se olvida la búsqueda anterior para volver a buscar (precargar_fotos.php)
+            if (!array_filter($c['fotos'] ?? [], fn($x) => !empty($x['bolivia']))) unset($c['buscado']);
+            file_put_contents($f, json_encode($c, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+        }
+
+        // 4. Del lugar: apartar las que no son de Bolivia
+        if (!is_dir(self::DESCARTE)) @mkdir(self::DESCARTE, 0775, true);
+        foreach ($lugares as $f => $c) {
+            $id = (int)basename($f, '.json');
+            $quedan = [];
+            foreach ($c['fotos'] ?? [] as $x) {
+                $texto = $ctx($x['titulo'] ?? '');
+                if ($texto !== null && !self::esDeBolivia($texto)) {
+                    $img = self::archivo($id, (int)$x['n']);
+                    if (is_file($img)) @rename($img, self::DESCARTE . '/' . basename($img, '.jpg') . '_no_bolivia_' . time() . '.jpg');
+                    $res['lugar_apartadas']++;
+                    $log("apartada {$id}_{$x['n']}: {$x['titulo']}");
+                    continue;
+                }
+                if ($texto === null) $res['sin_respuesta']++; else $res['lugar_ok']++;
+                $quedan[] = $x;
+            }
+            $c['fotos'] = $quedan;
+            $c['verificado_bolivia'] = time();
+            file_put_contents($f, json_encode($c, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+        }
+        return $res;
+    }
+
     private static function mencionaAlguna(string $contexto, array $palabras): bool
     {
-        $t = ' ' . $contexto . ' ';
-        foreach ($palabras as $p) if ($p !== '' && str_contains($t, " {$p}")) return true;
+        foreach ($palabras as $p) {
+            if ($p !== '' && preg_match('/\b' . preg_quote($p, '/') . '(s|es)?\b/u', $contexto)) return true;
+        }
         return false;
     }
 

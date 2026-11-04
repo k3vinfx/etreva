@@ -385,14 +385,19 @@ public function obtenerDetalle($id) {
     public function obtenerResenas($id_atraccion, $limite = 5) {
         try {
             // Reseñas = calificaciones completadas (desde Itinerarios o directamente desde este detalle)
-            $sql  = "SELECT bt.id, bt.calificacion_usuario AS puntuacion, bt.comentario_usuario AS comentario,
-                            bt.created_at AS fecha_resena, u.nombre, u.apellido,
-                            u.email AS usuario_email, u.configuracion_json AS usuario_cfg
-                     FROM itinerarios.back_testing_mr bt
-                     JOIN itinerarios.itinerarios i ON i.id = bt.itinerario_id
-                     LEFT JOIN usuarios.usuarios u ON u.id = i.usuario_id
-                     WHERE bt.atraccion_id = ? AND bt.estado = 'completado'
-                     ORDER BY (bt.comentario_usuario IS NULL OR bt.comentario_usuario = ''), bt.created_at DESC
+            // Una reseña por usuario y atracción (la más reciente): nunca se repite el mismo autor
+            $sql  = "SELECT * FROM (
+                        SELECT DISTINCT ON (i.usuario_id)
+                               bt.id, bt.calificacion_usuario AS puntuacion, bt.comentario_usuario AS comentario,
+                               bt.created_at AS fecha_resena, u.nombre, u.apellido,
+                               u.email AS usuario_email, u.configuracion_json AS usuario_cfg
+                        FROM itinerarios.back_testing_mr bt
+                        JOIN itinerarios.itinerarios i ON i.id = bt.itinerario_id
+                        LEFT JOIN usuarios.usuarios u ON u.id = i.usuario_id
+                        WHERE bt.atraccion_id = ? AND bt.estado = 'completado'
+                        ORDER BY i.usuario_id, bt.created_at DESC
+                     ) r
+                     ORDER BY (r.comentario IS NULL OR r.comentario = ''), r.fecha_resena DESC
                      LIMIT ?";
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute([$id_atraccion, $limite]);
@@ -458,6 +463,15 @@ public function obtenerDetalle($id) {
      * un itinerario con estado 'resena' (no se lista como itinerario) + su fila en back_testing_mr.
      * Una sola reseña directa por usuario y atracción: si ya existe, se actualiza.
      */
+    /** Itinerario de la reseña directa del usuario en esa atracción (para no compararla consigo misma) */
+    public function itinerarioResena($id_usuario, $id_atraccion): ?int {
+        $st = $this->pdo->prepare("SELECT id FROM itinerarios.itinerarios
+                                   WHERE usuario_id = ? AND atracciones_id = ? AND estado = 'resena' LIMIT 1");
+        $st->execute([$id_usuario, $id_atraccion]);
+        $id = $st->fetchColumn();
+        return $id ? (int)$id : null;
+    }
+
     public function guardarResena($id_usuario, $id_atraccion, $puntuacion, $comentario = '') {
         require_once __DIR__ . '/itinerarios.php';
         $nota = max(1, min(5, (int)round($puntuacion)));

@@ -614,6 +614,11 @@ $tema = ($_SESSION['tema'] ?? 'oscuro') === 'claro' ? 'claro' : 'oscuro';
         <b id="sopBadge" class="sop-badge" hidden></b></a>
     </li>
 
+    <li><a href="index.php?c=adminconsentimientos&a=Index">
+        <ion-icon name="shield-checkmark-outline"></ion-icon>
+        <span><?= Lang::get('nav_admin.consentimientos') ?></span></a>
+    </li>
+
     <?php endif; ?>
     <li><a href="index.php?c=adminFinanzas&a=Index">
         <ion-icon name="cash-outline"></ion-icon>
@@ -1205,5 +1210,21 @@ document.querySelectorAll('.navegacion a').forEach(link => {
 });
 </script>
 
+<?php
+// ── Reglamento y consentimiento (primer ingreso o nueva versión) — solo turistas ──
+// Se consulta una vez por sesión; al aceptar, LegalController::Aceptar guarda la versión en la sesión.
+if ($aplica && !empty($_SESSION['user_id'])) {
+    require_once __DIR__ . '/../model/consentimiento.php';
+    if (($_SESSION['consentimiento_version'] ?? null) !== Consentimiento::VERSION) {
+        if (Consentimiento::vigente($_SESSION['user_id'])) {
+            $_SESSION['consentimiento_version'] = Consentimiento::VERSION;
+        } else {
+            require_once __DIR__ . '/../model/restriccionEdad.php';
+            $consentimientoMenor = RestriccionEdad::esMenor($_SESSION['user_id']);
+            include __DIR__ . '/cliente/modal/modal_consentimiento.php';
+        }
+    }
+}
+?>
 </body>
 </html>
